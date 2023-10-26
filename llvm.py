@@ -29,23 +29,32 @@ labels = ["clang:codegen",
           "c++11", "c++", "c", "concepts", "consteval", "constant-folding", "coroutines", "filesystem",
           "llvm:codegen", "llvm:optimizations", "miscompilation" ]
 
-def ensure_closed_backticks(text):
-    # Counter for backticks
-    counter = 0
-    
-    # Iterate through each character in the text
-    for char in text:
+def ensure_closed_patterns(text):
+    backtick_counter = 0
+    tilde_counter = 0
+
+    # Iterate through the text by index
+    i = 0
+    while i < len(text):
+        char = text[i]
         if char == '`':
-            counter += 1
-            
-    # If counter is odd, add one backtick to close it
-    if counter % 2 == 1:
+            backtick_counter += 1
+        elif char == '~' and i < len(text) - 1 and text[i+1] == '~':
+            tilde_counter += 1
+            i += 1  # skip the next character because we've counted the ~~
+        i += 1
+
+    # Handle unclosed backticks
+    if backtick_counter % 2 == 1:
         text += '`'
-    # If counter is divisible by 3 with a remainder, add the necessary backticks to make it a multiple of 3
-    elif counter % 3 != 0:
-        remainder = counter % 3
+    elif backtick_counter % 3 != 0:
+        remainder = backtick_counter % 3
         text += '`' * (3 - remainder)
     
+    # Handle unclosed tildes
+    if tilde_counter % 2 != 0:
+        text += '~~'
+
     return text
 
 def save_data(issue) :
@@ -80,7 +89,7 @@ def save_data(issue) :
         body = "None"
         if issue["body"] is not None :
             body = issue["body"]
-        body = ensure_closed_backticks(body)
+        body = ensure_closed_patterns(body)
 
         f.write("\n\n")
         f.write(f"### compiler : `{compile_name}`\n")
