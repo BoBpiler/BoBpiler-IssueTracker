@@ -3,6 +3,10 @@ import datetime
 import json
 from concurrent.futures import ThreadPoolExecutor
 
+# 검색 키워드 리스트 - 추가 및 삭제가 가능합니다.
+keywords = ["optimization", "miscompilation"]
+
+
 def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
     # 현재 날짜에서 5년 전의 날짜 계산
     end_date = datetime.date.today()
@@ -72,7 +76,6 @@ def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
     with open(f"{compiler_name}_bugzilla_{formatted_time}.json", "w", encoding="utf-8") as json_file:
         json.dump(details_list, json_file, ensure_ascii=False, indent=4)
 
-keywords = ["optimization", "miscompilation"]
 
 # ThreadPoolExecutor를 사용하여 병렬 처리
 with ThreadPoolExecutor() as executor:
