@@ -16,8 +16,8 @@ def create_folder(formatted_time):
     return output_directory
 
 
-# unique_bugs를 chunk_size만큼 나눠서 여러 파일에 저장하는 함수 (탐지된 버그 개수가 너무 많은 경우를 위해서 1000개 단위로 끊었음)
-def save_to_files(base_url, compiler_name, formatted_time, unique_bugs, chunk_size=1000):
+# unique_bugs를 chunk_size만큼 나눠서 여러 파일에 저장하는 함수 (md 파일의 길이가 만 줄이 넘지 않도록 하기 위해서 160개로 끊었음)
+def save_to_files(base_url, compiler_name, formatted_time, unique_bugs, chunk_size=160):
     
     num_chunks = len(unique_bugs) // chunk_size + (1 if len(unique_bugs) % chunk_size else 0)
     output_directory = create_folder(formatted_time)  # 폴더 생성 및 경로 가져오기
