@@ -18,7 +18,6 @@ response = requests.get(base_url, params=params)
 
 # 결과 확인 및 출력
 bugs = response.json().get("bugs", [])
-print(bugs)
 for bug in bugs:
     print("*"*100) # 구분선
     # 각 버그의 코멘트를 가져오는 API 호출
