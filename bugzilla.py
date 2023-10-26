@@ -22,6 +22,11 @@ def save_to_files(base_url, compiler_name, formatted_time, unique_bugs, chunk_si
 
         # 각 chunk에 대한 데이터 저장 로직 
         with open(md_filename, "w", encoding="utf-8") as md_file, open(json_filename, "w", encoding="utf-8") as json_file:
+            # 파일의 상단에 청크 관련 정보를 기록
+            md_file.write(f"### Total Bugs Detected: {len(unique_bugs)}\n")
+            md_file.write(f"### Current Chunk: {chunk_idx + 1} of {num_chunks}\n")
+            md_file.write(f"### Bugs in this Chunk: {len(current_chunk)} (From bug {start_idx + 1} to {end_idx if end_idx < len(unique_bugs) else len(unique_bugs)})\n")
+            md_file.write("---\n")  # 구분선
             details_list = []
             for bug in current_chunk:
                 comment_url = f"{base_url}/{bug['id']}/comment"
