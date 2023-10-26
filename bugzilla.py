@@ -1,7 +1,7 @@
 import requests
 import datetime
 import json
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 
 # 검색 키워드 리스트 - 추가 및 삭제가 가능합니다.
 keywords = ["optimization", "miscompilation"]
@@ -11,7 +11,7 @@ def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
     # 현재 날짜에서 5년 전의 날짜 계산
     end_date = datetime.date.today()
     start_date = end_date - datetime.timedelta(days=5*365)  # 대략적인 5년 전
-    now = datetime.now()    # 현재 시간을 기반으로 md, json 파일 이름을 생성함
+    now = datetime.datetime.now()    # 현재 시간을 기반으로 md, json 파일 이름을 생성함
     formatted_time = now.strftime('%Y%m%d_%H%M%S')  # Format the datetime object to string: YYYYMMDD_HHMMSS
 
     params = {
@@ -77,7 +77,11 @@ def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
         json.dump(details_list, json_file, ensure_ascii=False, indent=4)
 
 
-# ThreadPoolExecutor를 사용하여 병렬 처리
-with ThreadPoolExecutor() as executor:
-    executor.submit(scraping_bugs_from_bugzilla, "https://gcc.gnu.org/bugzilla/rest.cgi/bug", "gcc", keywords)
-    executor.submit(scraping_bugs_from_bugzilla, "https://bugs.llvm.org/rest.cgi/bug", "llvm", keywords)
+if __name__ == "__main__":
+    # ThreadPoolExecutor를 사용하여 병렬 처리
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(scraping_bugs_from_bugzilla, "https://gcc.gnu.org/bugzilla/rest.cgi/bug", "gcc", keywords),
+            executor.submit(scraping_bugs_from_bugzilla, "https://bugs.llvm.org/rest.cgi/bug", "llvm", keywords)
+        ]
+        wait(futures)
