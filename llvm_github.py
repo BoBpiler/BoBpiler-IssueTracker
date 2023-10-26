@@ -15,7 +15,7 @@ def read_git_key(key_path):
 
     # Format the datetime object to string: YYYYMMDD_HHMMSS
     formatted_time = now.strftime('%Y%m%d_%H%M%S')
-    file_name = f'{compile_name}_{formatted_time}.md'
+    file_name = f'{compile_name}_GITHUB_{formatted_time}.md'
     global GITHUB_TOKEN
     with open(key_path, 'r', encoding='utf-8') as file:
         GITHUB_TOKEN = file.read()
@@ -29,32 +29,22 @@ labels = ["clang:codegen",
           "c++11", "c++", "c", "concepts", "consteval", "constant-folding", "coroutines", "filesystem",
           "llvm:codegen", "llvm:optimizations", "miscompilation" ]
 
-def ensure_closed_patterns(text):
-    backtick_counter = 0
-    tilde_counter = 0
-
-    # Iterate through the text by index
-    i = 0
-    while i < len(text):
-        char = text[i]
-        if char == '`':
-            backtick_counter += 1
-        elif char == '~' and i < len(text) - 1 and text[i+1] == '~':
-            tilde_counter += 1
-            i += 1  # skip the next character because we've counted the ~~
-        i += 1
-
-    # Handle unclosed backticks
-    if backtick_counter % 2 == 1:
-        text += '`'
-    elif backtick_counter % 3 != 0:
-        remainder = backtick_counter % 3
-        text += '`' * (3 - remainder)
+def ensure_closed_backticks(text):
+    # Counter for backticks
+    counter = 0
     
-    # Handle unclosed tildes
-    if tilde_counter % 2 != 0:
-        text += '~~'
-
+    # Iterate through each character in the text
+    for char in text:
+        if char == '`':
+            counter += 1
+            
+    # If counter is odd, add one backtick to close it
+    if counter % 2 == 1:
+        text += '`'
+    # If counter is even but not a multiple of 3, add one more backtick to make it a multiple of 3
+    elif counter % 3 != 0:
+        text += '`'
+    
     return text
 
 def save_data(issue) :
@@ -89,7 +79,7 @@ def save_data(issue) :
         body = "None"
         if issue["body"] is not None :
             body = issue["body"]
-        body = ensure_closed_patterns(body)
+        body = ensure_closed_backticks(body)
 
         f.write("\n\n")
         f.write(f"### compiler : `{compile_name}`\n")
@@ -122,6 +112,7 @@ def send_api_request(page_num):
         "X-GitHub-Api-Version": "2022-11-28"
     }
     params = {
+        "state" : "all",
         "per_page": 100,
         "page": page_num
     }
