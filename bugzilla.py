@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 # 검색 키워드 리스트 - 추가 및 삭제가 가능합니다.
 keywords = ["optimization", "miscompilation"]
 
-
+# 버그질라에서 버그 리포팅을 수집하는 함수
 def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
     # 현재 날짜에서 5년 전의 날짜 계산
     end_date = datetime.date.today()
