@@ -6,8 +6,8 @@ max_take = 40
 # URL
 url = "https://sendvsfeedback2.azurewebsites.net/api/searchquery/searchV2"
 
-removed_state = ["notabug", "duplicate"] #
-removed_roadmap = ["vs-cpp-roadmap" , "vs2022-roadmap"] # roadmap이란말이 포함되어있으면 제거 
+removed_state = ["notabug", "duplicate", "otherproduct", "notenoughinfo"] #
+removed_roadmap = ["vs-cpp-roadmap" , "vs2022-roadmap"] # tags roadmap이란말이 포함되어있으면 제거 
 
 def get_msvc_issue(page) :
     # 헤더 설정
@@ -89,7 +89,11 @@ def get_msvc_issue(page) :
         print("TAGS : ")
         for tag in d["tags"] :
             print(tag["value"], ", ")
-        print("STATE : ", d["state"])
+        # print("STATE : ", d["state"])
+        # if any("roadmap" in tag["value"].lower() for tag in d["tags"]):
+        #     continue  # "roadmap" 단어를 포함하는 태그가 있으면 해당 항목을 출력하지 않고 다음 항목으로 넘어갑니다
+
+
         print("LINK : ", d["communityUrl"])
         print("CREATED TIME : ", d["createdDateUtc"])
         print('TEXT : ', d["text"])
@@ -97,4 +101,4 @@ def get_msvc_issue(page) :
         print()
         print()
 
-get_msvc_issue(120)
+get_msvc_issue(240)
