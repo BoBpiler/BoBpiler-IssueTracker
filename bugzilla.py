@@ -1,24 +1,35 @@
 import requests
 import datetime
 import json
+import os
 from concurrent.futures import ThreadPoolExecutor, wait
 
 # 검색 키워드 리스트 - 추가 및 삭제가 가능합니다.
 keywords = ["optimization", "miscompilation"]
 
+
+# 폴더를 생성하는 함수
+def create_folder(formatted_time):
+    output_directory = f"output/{formatted_time}"
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    return output_directory
+
+
 # unique_bugs를 chunk_size만큼 나눠서 여러 파일에 저장하는 함수 (탐지된 버그 개수가 너무 많은 경우를 위해서 1000개 단위로 끊었음)
 def save_to_files(base_url, compiler_name, formatted_time, unique_bugs, chunk_size=1000):
     
     num_chunks = len(unique_bugs) // chunk_size + (1 if len(unique_bugs) % chunk_size else 0)
-    
+    output_directory = create_folder(formatted_time)  # 폴더 생성 및 경로 가져오기
+
     for chunk_idx in range(num_chunks):
         start_idx = chunk_idx * chunk_size
         end_idx = start_idx + chunk_size
         current_chunk = list(unique_bugs)[start_idx:end_idx]
 
         # chunk 별로 파일 이름 수정
-        md_filename = f"{compiler_name}_bugzilla_{formatted_time}_chunk_{chunk_idx + 1}.md"
-        json_filename = f"{compiler_name}_bugzilla_{formatted_time}_chunk_{chunk_idx + 1}.json"
+        md_filename = f"{output_directory}/{compiler_name}_bugzilla_{formatted_time}_chunk_{chunk_idx + 1}.md"
+        json_filename = f"{output_directory}/{compiler_name}_bugzilla_{formatted_time}_chunk_{chunk_idx + 1}.json"
 
         # 각 chunk에 대한 데이터 저장 로직 
         with open(md_filename, "w", encoding="utf-8") as md_file, open(json_filename, "w", encoding="utf-8") as json_file:
