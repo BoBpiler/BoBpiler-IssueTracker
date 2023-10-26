@@ -7,6 +7,8 @@ def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
     # 현재 날짜에서 5년 전의 날짜 계산
     end_date = datetime.date.today()
     start_date = end_date - datetime.timedelta(days=5*365)  # 대략적인 5년 전
+    now = datetime.now()    # 현재 시간을 기반으로 md, json 파일 이름을 생성함
+    formatted_time = now.strftime('%Y%m%d_%H%M%S')  # Format the datetime object to string: YYYYMMDD_HHMMSS
 
     params = {
         "keywords": "", 
@@ -29,7 +31,7 @@ def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
     # 탐지된 모든 버그의 상세 정보를 저장하는 리스트
     details_list = []
     # 결과를 readable하게 가공해서 md 파일로 저장
-    with open(f"{compiler_name}_bugzilla.md", "w", encoding="utf-8") as md_file:
+    with open(f"{compiler_name}_bugzilla_{formatted_time}.md", "w", encoding="utf-8") as md_file:
         for bug in unique_bugs:
             comment_url = f"{base_url}/{bug['id']}/comment"
             comment_response = requests.get(comment_url)
@@ -67,7 +69,7 @@ def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
             md_file.write(f"### contents :\n{description}\n\n\n")
             md_file.write("---\n")  # 구분선
 
-    with open(f"{compiler_name}_bugzilla.json", "w", encoding="utf-8") as json_file:
+    with open(f"{compiler_name}_bugzilla_{formatted_time}.json", "w", encoding="utf-8") as json_file:
         json.dump(details_list, json_file, ensure_ascii=False, indent=4)
 
 keywords = ["optimization", "miscompilation"]
