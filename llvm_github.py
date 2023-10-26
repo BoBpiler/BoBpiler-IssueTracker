@@ -1,12 +1,21 @@
 import requests
 import json
 from datetime import datetime, timedelta
+import os
 
 GITHUB_TOKEN = ""
 get_timeout = 5
 years = 5
 file_name = ''
 compile_name = 'LLVM'
+per_page = 10
+
+# 폴더를 생성하는 함수
+def create_folder(formatted_time):
+    output_directory = f"output/{formatted_time}"
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    return output_directory
 
 def read_git_key(key_path):
     global file_name
@@ -15,14 +24,15 @@ def read_git_key(key_path):
 
     # Format the datetime object to string: YYYYMMDD_HHMMSS
     formatted_time = now.strftime('%Y%m%d_%H%M%S')
-    file_name = f'{compile_name}_GITHUB_{formatted_time}.md'
+    output_directory = create_folder(formatted_time)
+    file_name = f'{output_directory}/{compile_name}_GITHUB_{formatted_time}'
     global GITHUB_TOKEN
     with open(key_path, 'r', encoding='utf-8') as file:
         GITHUB_TOKEN = file.read()
 
 
 discard_labels = ["question", "c++/cli", "clang:analysis",
-                  "code-quality", "libc++", "invalid", "libstdc++", "objective-c", "crash-on-valid", "crash"]
+                  "code-quality", "libc++", "invalid", "libstdc++", "objective-c", "crash-on-valid", "crash", "duplicate"]
 # "clang:frontend",
 labels = ["clang:codegen",
           "c99", "c++26", "c23", "c++23", "c++20", "c17", "c++17", "c++14", "c11",
@@ -47,13 +57,14 @@ def ensure_closed_backticks(text):
     
     return text
 
-def save_data(issue) :
+def save_data(issue, page_num) :
     # if issue.get("pull_request") is None:
     #     print("None")
     # else :
     #     print(issue["pull_request"])
     #return True
-    with open(file_name, 'a') as f:
+    file_index = (page_num - 1) // per_page + 1
+    with open(file_name + f"_{file_index}.md", 'a') as f:
         # print("TITLE : ", issue["title"])
         # print("API URL : ", issue["url"])
         # print("HTML_URL : ", issue["html_url"])
@@ -185,7 +196,7 @@ def get_llvm_issue(page_num):
                 continue
 
             if any(iss["name"] in labels for iss in issue["labels"]):
-                save_data(issue)
+                save_data(issue, page_num)
                 continue
                 # Store or process the issue here
 
