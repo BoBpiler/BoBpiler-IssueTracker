@@ -7,6 +7,12 @@ from concurrent.futures import ThreadPoolExecutor, wait
 # 검색 키워드 리스트 - 추가 및 삭제가 가능합니다.
 keywords = ["optimization", "miscompilation"]
 
+# gcc components에서 c, c++과 관련이 있는 컴포넌트 종류 리스트
+gcc_relevant_components = [
+    "c", "c++", "demangler", "libstdc++", "preprocessor", "objc++", 
+    "lto", "middle-end", "rtl-optimization", "tree-optimization", 
+    "target", "plugins", "libgcc"
+]
 
 # 폴더를 생성하는 함수
 def create_folder(formatted_time):
@@ -100,8 +106,12 @@ def scraping_bugs_from_bugzilla(base_url, compiler_name, search_keywords):
         response = requests.get(base_url, params=params)
         bugs.extend(response.json().get("bugs", []))
 
-    # 버그 id를 기반으로 중복 제거
-    unique_bugs = {bug['id']: bug for bug in bugs}.values()
+    if compiler_name == 'gcc':
+        # 버그 id를 기반으로 중복 제거 및 관련 컴포넌트 필터링
+        unique_bugs = {bug['id']: bug for bug in bugs if bug['component'] in gcc_relevant_components}.values()
+    else:
+        # 버그 id를 기반으로 중복 제거
+        unique_bugs = {bug['id']: bug for bug in bugs}.values()
     
     # unique_bugs를 파일로 저장, chunk size 기준으로 md, json 파일 생성
     save_to_files(base_url, compiler_name, formatted_time, unique_bugs)
