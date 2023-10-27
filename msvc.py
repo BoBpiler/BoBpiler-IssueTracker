@@ -1,17 +1,87 @@
 import requests
 import json
+from datetime import datetime, timedelta
+import os
 
-max_take = 40
+BASE_URL = "https://sendvsfeedback2.azurewebsites.net/api/searchquery/searchV2"
+MAX_TAKE = 40
 
-# URL
-url = "https://sendvsfeedback2.azurewebsites.net/api/searchquery/searchV2"
+REMOVED_STATE = ["notabug", "duplicate", "otherproduct", "notenoughinfo", "outofscope"]
+REMOVED_ROADMAP = "roadmap" # tags
 
-removed_state = ["notabug", "duplicate", "otherproduct", "notenoughinfo"] #
-removed_roadmap = ["vs-cpp-roadmap" , "vs2022-roadmap"] # tags roadmap이란말이 포함되어있으면 제거 
+current_bug_count = 0
+file_index = 1
+MAX_BUGS_PER_FILE = 240
+compile_name = 'MSVC'
+file_name = ''
+now = ''
 
-def get_msvc_issue(page) :
-    # 헤더 설정
-    headers = {
+def create_folder(formatted_time):
+    output_directory = f"output/{formatted_time}"
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    return output_directory
+
+def save_data(issue) :
+    global now
+    formatted_time = now.strftime('%Y%m%d_%H%M%S')
+    output_directory = create_folder(formatted_time)
+    file_name = f'{output_directory}/{compile_name}_COMMUNITY_{formatted_time}'
+    global current_bug_count
+    global file_index
+
+    if current_bug_count >= MAX_BUGS_PER_FILE:
+        file_index += 1
+        current_bug_count = 0
+    with open(file_name + f"_{file_index}.md", 'a') as f:
+        # print("TITLE : ", issue["title"])
+        # print("TAGS : ")
+        # for tag in issue["tags"]:
+        #     print(tag["value"], ", ")
+        # print("LINK : ", issue["communityUrl"])
+        # print("STATE : ", issue["state"])
+        # print("CREATED TIME : ", issue["createdDateUtc"])
+        # print('TEXT : ', issue["text"])    
+
+        title = "None"
+        if issue["title"] is not None :
+            title = issue["title"]
+        
+        created_at = "None"
+        if issue["createdDateUtc"] is not None :
+            created_at = issue["createdDateUtc"]
+        
+        html_url = "None"
+        if issue["communityUrl"] is not None:
+            html_url = issue["communityUrl"]
+        
+        state = "None"
+        if issue["state"] is not None:
+            state = issue["state"]
+        
+        body = "None"
+        if issue["text"] is not None :
+            body = issue["text"]
+        
+
+        f.write("\n\n")
+        f.write(f"### compiler : `{compile_name}`\n")
+        f.write(f"### title : `{title}`\n")
+        f.write("### open_at : `" + created_at + "`\n")
+        f.write("### link : " + html_url + "\n")
+        f.write("### status : `" + state  + "`\n")
+        f.write("### tags : `")
+        for label in issue["tags"]:
+            f.write(label["value"] + ", ")
+        f.write("`\n")
+
+        f.write("### content : \n" + body + "")
+        f.write("\n\n\n")
+        f.write("---\n")
+    current_bug_count += 1
+
+def create_headers():
+    return {
         "Host": "sendvsfeedback2.azurewebsites.net",
         "Content-Length": "826",
         "Sec-Ch-Ua": "",
@@ -30,8 +100,9 @@ def get_msvc_issue(page) :
         "Connection": "close"
     }
 
+def create_data(page):
     # 바디 (JSON) 데이터
-    data = {
+    return {
         "searchFor": {
             "source": "developer-community",
             "tags": [
@@ -51,7 +122,7 @@ def get_msvc_issue(page) :
             "watsonEntries": []
         },
         "skip": page,
-        "take": max_take,
+        "take": MAX_TAKE,
         "sort": "relevance",
         "filter": "all",
         "spaceIds": ["62"],
@@ -72,33 +143,59 @@ def get_msvc_issue(page) :
         }
     }
 
-    # POST 요청 보내기
-    response = requests.post(url, headers=headers, json=data)
+def send_request(page):
+    headers = create_headers()
+    data = create_data(page)
 
-    # 응답 확인
-    data = response.json()
-    # JSON 문자열로 변환
-    json_string = json.dumps(data, indent=4)
+    while True:
+        try:
+            response = requests.post(BASE_URL, headers=headers, json=data)
+            response.raise_for_status()
+            return response.json()
+        except (requests.ConnectionError, requests.Timeout, requests.RequestException, json.JSONDecodeError) as e:
+            print(f"Error occurred: {e}, retrying.. {page}")
+            continue
 
-    # print(json_string)
 
-    # print(data)
+def print_issue_data(issue):
+    print(issue)
+    print("\n\n")
+
+
+def is_issue_relevant(issue):
+    if issue["state"] in REMOVED_STATE:  # 상태 체크
+        return False
+    for tag in issue["tags"]:
+        if REMOVED_ROADMAP in tag["value"]:  # 태그 체크
+            return False
+    return True
+
+
+def get_msvc_issue(page):
+    data = send_request(page)
+
+    if not data:
+        return True
+
     print(len(data["results"]))
-    for d in data["results"]:
-        print("TITLE : ", d["title"])
-        print("TAGS : ")
-        for tag in d["tags"] :
-            print(tag["value"], ", ")
-        # print("STATE : ", d["state"])
-        # if any("roadmap" in tag["value"].lower() for tag in d["tags"]):
-        #     continue  # "roadmap" 단어를 포함하는 태그가 있으면 해당 항목을 출력하지 않고 다음 항목으로 넘어갑니다
+
+    for issue in data["results"]:
+        if is_issue_relevant(issue):
+            save_data(issue)
+
+    return False
 
 
-        print("LINK : ", d["communityUrl"])
-        print("CREATED TIME : ", d["createdDateUtc"])
-        print('TEXT : ', d["text"])
-        print(d)
-        print()
-        print()
+def main():
+    global now
+    now = datetime.now()
+    page = 0
+    while True:
+        if get_msvc_issue(page):
+            break
+        page += MAX_TAKE
+    print("end")
 
-get_msvc_issue(240)
+
+if __name__ == "__main__":
+    main()
