@@ -1,5 +1,5 @@
 ## LLVM 목차
-
+## 컴파일러 버그
 1. [wrong code at -O1 and above on x86_64-linux-gnu (컴파일러 버그)](#1)
 2. [LoopVectorize Miscompilation with Aliases in clang 15+ (컴파일러 버그)](#2)
 3. [Failure to remove mask from shift amounts in unrolled loop (컴파일러 버그)](#3)
@@ -15,26 +15,103 @@
 13. [Clang fails to remove unnecessary loop (컴파일러 버그)](#13)
 14. [Wrong code at -O2 on x86_64-linux_gnu since 3ddd1ff (컴파일러 버그)](#14)
 15. [Too aggresive C++23 static call operator optimization (컴파일러 버그)](#15)
+16. [abs from cmath is not constexpr when it should be [C++23] (컴파일러 버그)](#18)
+17. [Wrong code at -O2 on x86_64-linux_gnu since ddfee6d (recent regression) (컴파일러 버그)](#25)
+18. [[X86] Musttail calls involving unions with long double members are miscompiled at -O2 (컴파일러 버그)(이거 뭔가 취약점으로 잘 쓸수 있을지도 !)](#26)
+19. [[WinEH] Model catch object write in MIR (컴파일러 버그)(익셉션 랜덤 메모리 읽기)](#27)
+20. [Wrong code under '-mcmodel=large -O1' (컴파일러 버그)](#28)
+21. [miscompile of store to element of <i1 x N> (컴파일러 버그)](#29)
+22. [Compare operator not defined for recursive data types on C++20 (컴파일러 버그)](#31)
+23. [-frounding-math is buggy at -O1 and above (컴파일러 버그)](#32)
+24. [Wrong code at -O3  on x86_64 [14 regression since 0d95b20] (컴파일러 버그)](#33)
+25. [avx register spill generates 20 extra instructions (컴파일러 버그)](#34)
+26. [Clang ssp-buffer-size misinterprets some IR-level padding as arrays (컴파일러 버그) (스택 카나리 사라짐)](#35)
+27. [Behavior of overflowing floating-point to integer conversions (컴파일러 버그)](#40)
+28. [wrong type of ternary expression involving composite pointer type with array of unknown bound (컴파일러 버그)](#41)
+42. [Complex division doesn't respect pragma float_control (컴파일러 버그)](#42)
+43. [Sanitizer `pointer-overflow` does not appear to function (컴파일러 버그)](#43)
+44. [[Bug][AArch64] Ensure SVE function operands passed via memory are initialised.](#44)
+45. [[AArch64] Miscompilation when stack tagging is enabled in AArch64 (컴파일러 버그)](#45)
+46. [[clang] Main Function Missing Due to Incorrect Infinite Loop Optimization (컴파일러 버그)](#46)
+47. [`SSP Strong with `-fexceptions` causing code-gen change on a C compilation with a `noreturn` attribute` (컴파일러 버그)](#47)
+48. [SLPVectorizer incorrectly reorders select operands (컴파일러 버그)](#50)
+49. [[clang][vectorize] -O2 vectorize will get wrong result (컴파일러 버그)](#51)
+50. [The combination of -fno-rtti -fexceptions is very brittle (컴파일러 버그)](#52)
+51. [Wrong code at -Os on x86_64 (recent regression since 6ed152a) (컴파일러 버그)](#53)
+52. [[Inliner] Should we inline callee containing llvm.frameaddress? (컴파일러 버그), 인라인 함수의 주소 등과 연관](#54)
+53. [[AArch64] neon big endian miscompiled (컴파일러 버그)](#56)
+54. [Incorrect value of requires expression involving discarded value (컴파일러 버그)](#57)
+55. [Assumptions not working with complex conditionals (컴파일러 버그)](#61)
+56. [Possible incorrect code generation when using variable templates (컴파일러 버그)](#62)
+58. [Missed function specialization (Clang vs GCC) (컴파일러 버그)](#63)
+58. [if-conversion creating dead references to removed MachineBasicBlocks in INLINEASM_BR (컴파일러 버그)](#64)
+58. [[Clang] [Concepts] Regression between 15.x and trunk: satisfaction of constraint depends on itself (컴파일러 버그)](#65)
+48. [machine-cse pass breaks __builtin_setjmp on powerpc (컴파일러 버그)](#66)
+48. [clang c++20: Associated constraints added to a default constructor are excessively checked(컴파일러 버그)](#67)
+48. [[clang] Multiple destructor calls emitted with consteval usage in switch statement (이거 소멸자 두번 호출되는 쌉버그 !)](#68)
+48. [comparison with short (< 16 chars) local `const std::string` is slower when it is `static` (성능이 더 느려지는 컴파일러 버그)](#69)
+48. [Terminate handler generated for noexcept method using try/catch(...) (try catch에서 프로그램 종료 코드 컴파일되는 컴파일러 버그)](#70)
+48. [[clang] Miscompiled atomic ordering at -O1 (clang-14 onwards) (원자 변수에 대한 컴파일러 버그)](#71)
+48. [Wrongful cleanup for `trivial_abi` parameter after passing it to callee (이중 소멸자 호출 버그)](#72)
+48. [Constant propagation makes a register value forgotten (이중 으로 값을 할당 이거 뭔가 문제가 될수있을지도?)](#73)
+48. [Thrown exception in `nothrow` function not detected (컴파일러 경고 누락 ?)](#74)
+48. [[Clang]: Incorrect inheritance of protected (default) constructor (컴파일러 버그)](#75)
+48. [wrong type for `auto&` parameter when deducing a class template partial specialization (auto에 대한 타입 추론 버그)](#76)
+48. [A miscompile in instcombine, opt pass. (컴파일러 버그)(재현이 안됨..)](#79)
+48. [clang 15 built kernel crashes w. "BUG: kernel NULL pointer dereference, address: 00000000", gcc 12 built kernel with same config boots fine (6.1-rc7, x86_32) (커널에서 발생한 컴파일러 관련 버그인듯? 분석 더 필요)](#80)
+48. [clang-15: May produce invalid code when -O1 (or higher) is used with -fzero-call-used-regs=all (openssh에서 발생한 컴파일러 버그)](#81)
+48. [[clang] incorrect code generation when building gawk 5.2.1 using -O2/-O3 (컴파일러 쌉버그)](#82)
+48. [Clang mistakenly elides coroutine allocation resulting in a segfault and `stack-use-after-return` from `AddressSanitizer` (컴파일러 버그)](#83)
+48. [NTTP of structural class types pass values literally when used directly (should: invoke copy constructors) in Clang 15 (C++) (컴파일러 버그)](#84)
+48. [Miscompilation with noalias and pointer equality (컴파일러 버그)](#85)
+48. [[LoopVectorizePass] Miscompilation of default vectorization vs no vectorization (컴파일러 버그)](#86)
+48. [Incorrect sign-extension of load's index generated on armv8 under UBSAN (컴파일러 버그)](#87)
+48. [](#)
+48. [](#)
+48. [](#)
+48. [](#)
+
+## 컴파일 실패
 16. [[C++17][clang:Frontend] Clang can't deduce the correct deduction guide.(컴파일 실패)](#16)
 17. [Out of Line Definition Error for Constrained Function of Template Class (컴파일 실패)](#17)
-18. [abs from cmath is not constexpr when it should be [C++23]](#18)
 19. [Clang crash: Assertion DT.dominates(RHead, LHead) && "No dominance between recurrences used by one SCEV?"' failed. (컴파일 실패)](#19)
 20. [Worse code gen when integer is wrapped in struct (컴파일러 버그)](#20)
 21. [Clang cuda functions not handling concepts correctly. (컴파일 실패)](#21)
 22. [odd code generated for swapping... (컴파일 실패)](#22)
 23. [clang places calls to operator delete even for noexcept constructors (컴파일 실패)](#23)
 24. [Assertion failure with constrained parameter referring to previous parameter (컴파일 실패)](#24)
-25. [Wrong code at -O2 on x86_64-linux_gnu since ddfee6d (recent regression) (컴파일러 버그)](#25)
-26. [[X86] Musttail calls involving unions with long double members are miscompiled at -O2 (컴파일러 버그)(이거 뭔가 취약점으로 잘 쓸수 있을지도 !)](#26)
-27. [](#27)
-28. [](#28)
-29. [](#29)
-30. [](#30)
-31. [](#31)
-32. [](#32)
-33. [](#33)
-34. [](#34)
-35. [](#35)
+30. [Stateful failure to evaluate lambda concept constraint from conditional explicit specifier (컴파일 실패)](#30)
+36. [clang dies with SIGBUS compiling gtest-all.cc on 32-bit SPARC (컴파일 실패)](#36)
+37. [Clang crash: Assertion `(Op == Instruction::BitCast || Op == Instruction::PtrToInt || Op == Instruction::IntToPtr) && "InsertNoopCastOfTo cannot perform non-noop casts!" failed.` (컴파일 실패)](#37)
+38. [Clang frontend C++ crash with capture-default in concept (컴파일 실패)](#38)
+39. [Clang frontend C++ crash with atomic constraints (컴파일 실패)](#39)
+40. [[clang] Issues with determining valid constant expressions in `cxx2b` (컴파일 실패)](#48)
+41. [Clang incorrectly complains about default template argument not being reachable (컴파일 실패)](#49)
+42. [[clang/c++/coroutines] -Wunused-parameter not working with coroutines. (컴파일 경고 누락)](#55)
+43. [Failure to match alias template against template template parameter(컴파일 실패)](#58)
+44. [clang: concept checking bug in out-of-line definitions of inner class member functions (컴파일 실패)](#59)
+45. [Clang cannot use _Atomic qualified integer type as controlling expression in switch statement (컴파일 실패)](#60)
+46. [Clang and GCC differ in instantiation strategy of constexpr and incomplete types (컴파일 실패)](#77)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+46. [](#)
+. [](#)
+. [](#)
+. [](#)
 
 ## 1
 ### compiler : `LLVM`
@@ -954,7 +1031,7 @@ Bisected to 7abe3497e72af3ddee789dfc62c63a981a25dbf6, which was committed by @da
 
 Compiler explorer: https://godbolt.org/z/hPTj849f6
 
-```console
+```cpp
 % cat a.c
 int a, l;
 short b, e;
@@ -994,6 +1071,12 @@ signed char m(int t) {
 }
 int main() {}
 %
+```
+
+<details><summary>컴파일 오류</summary>
+<p>
+
+```
 % clang -O2 a.c
 <a.c>:33:6: warning: comparison of address of 'k' equal to a null pointer is always false [-Wtautological-pointer-compare]
    33 |     &k == 0;
@@ -1057,7 +1140,10 @@ Stack dump:
 clang: error: clang frontend command failed with exit code 134 (use -v to see invocation)
 Compiler returned: 134
 %
-````
+```
+</p>
+</details>
+
 
 
 ---
@@ -1600,6 +1686,4547 @@ jmp     foo@PLT                         # TAILCALL
 ```
 
 which is not only nonsensical but also a guaranteed segmentation violation, as it involves two consecutive MOVAPSes to addresses 8 bytes apart, when MOVAPS requires 16-byte alignment.
+
+
+---
+
+# 27
+### compiler : `LLVM`
+### title : `[WinEH] Model catch object write in MIR`
+### open_at : `2023-09-22T09:55:34Z`
+### link : https://github.com/llvm/llvm-project/issues/67110
+### status : `open`
+### tags : `llvm:codegen, platform:windows, `
+### content : 
+To capture the idea from https://github.com/llvm/llvm-project/pull/66988#discussion_r1333561055:
+
+Currently, the potential write to the WinEH catch object at the point of the invoke is not properly modeled in MIR. We could fix this by adding a reference to all possible catch object frame indices to the corresponding call instructions. This would make stack coloring correct out of the box.
+
+https://godbolt.org/z/1Wja4Yjdz
+
+https://reviews.llvm.org/D86673
+
+```cpp
+#include <cstdio>
+__attribute__((noinline,nothrow,weak)) void escape(int *p) { }
+struct object {
+  int i;
+  object() {
+    i = 1;
+  }
+  ~object() {
+    // if "object" and "exp" are assigned to the same slot,
+    // this assign will corrupt "exp".
+    i = 0x42424242;
+    escape(&i);
+  }
+};
+inline void throwit() { throw 0x41414141; }
+
+volatile int v;
+inline void func() {
+  try {
+    object o;
+    throwit();
+  }
+  // "exp" is written by the OS when the "throw" occurs.
+  // Then the destructor is called, and the store-assign
+  // clobbers the value of "exp".
+  // The dereference of "exp" (with value 9999) causes a crash.
+  catch (int &exp) {
+    v = exp;
+    printf("%d\n", v);
+  }
+}
+
+int main() {
+  func();
+  return 0;
+}
+```
+
+
+```
+"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\Llvm\x64\bin\clang-cl.exe" -m32 -O2 -EHs .\exception.cpp -o exception.exe /Zi
+```
+![Random memory read](output/20231027_145032/image.png)
+
+---
+
+# 28
+### compiler : `LLVM`
+### title : `Wrong code under '-mcmodel=large -O1'`
+### open_at : `2023-09-22T06:20:31Z`
+### link : https://github.com/llvm/llvm-project/issues/67088
+### status : `closed`
+### tags : `miscompilation, llvm:optimizations, `
+### content : 
+I compiled the following code with clang at `-mcmodel=large -O1`, and it produces `Segmentation fault (core dumped)`.
+
+```c
+$ cat test.c
+struct {
+  unsigned long a;
+} b;
+int c, f, e, d;
+int *g = &c;
+void h(char aa, char bb, char i) {
+j:
+  for (;;) {
+    unsigned int k;
+    for (; b.a;)
+      if (i)
+        goto j;
+    if (i)
+      continue;
+    if (g)
+      break;
+  }
+}
+int main() { h(f, e, d); }
+$
+$ clang-tk -mcmodel=large -O1 test.c; ./a.out
+Segmentation fault (core dumped)
+$
+$ clang-tk -mcmodel=large -O2 test.c; ./a.out
+$
+$ clang-16.0.0 -mcmodel=large -O1 test.c; ./a.out
+$
+$ clang-tk --version
+Ubuntu clang version 18.0.0 (++20230821052626+634b2fd2cac2-1~exp1~20230821172748.738)
+Target: x86_64-pc-linux-gnu
+Thread model: posix
+$
+$ clang-16.0.0 --version
+clang version 16.0.0
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+```
+
+
+---
+
+
+# 29
+### compiler : `LLVM`
+### title : `miscompile of store to element of <i1 x N>`
+### open_at : `2023-09-21T20:35:49Z`
+### link : https://github.com/llvm/llvm-project/issues/67060
+### status : `closed`
+### tags : `OpenCL, miscompilation, `
+### content : 
+LLVM is optimizing a store to an element of an `<i1 x N>` into an `i1` store, which then gets lowered to a byte store, clobbering adjacent vector elements.
+
+[godbolt](https://godbolt.org/z/dPeKErroY):
+
+```c++
+typedef __attribute__((ext_vector_type(32))) bool v32bool;
+
+v32bool v32b;
+
+void set() {
+    v32b[0] = true;
+}
+```
+
+is lowered by Clang to
+
+```llvm
+@v32b = dso_local global i32 0, align 4
+
+define dso_local void @set()() {
+entry:
+  %0 = load i32, ptr @v32b, align 4
+  %1 = bitcast i32 %0 to <32 x i1>
+  %vecins = insertelement <32 x i1> %1, i1 true, i32 0
+  %2 = bitcast <32 x i1> %vecins to i32
+  store i32 %2, ptr @v32b, align 4
+  ret void
+}
+```
+
+and then incorrectly optimized into
+
+```llvm
+define dso_local void @set()() local_unnamed_addr {
+entry:
+  store i1 true, ptr @v32b, align 4
+  ret void
+}
+```
+
+The transform would be correct if the vector elements were byte-aligned, but is not correct in this case.`
+
+
+---
+
+# 30
+### compiler : `LLVM`
+### title : `Stateful failure to evaluate lambda concept constraint from conditional explicit specifier`
+### open_at : `2023-09-21T20:09:22Z`
+### link : https://github.com/llvm/llvm-project/issues/67058
+### status : `open`
+### tags : `clang:frontend, concepts, confirmed, `
+### content : 
+Clang rejects-valid:
+```c++
+template<class T> concept Q = requires(T t) { [](int*){}(t); };
+//static_assert(not Q<int>);
+struct A { template<class T> explicit(Q<T>) A(T); };
+A a = 1;
+```
+If the static_assert is uncommented, clang accepts.
+
+If the constraint is inlined, clang accepts-invalid:
+```c++
+struct A { template<class T> explicit(requires(T t) { [](int*){}(t); }) A(T); };
+A a = new int;
+```
+
+
+---
+
+# 31
+### compiler : `LLVM`
+### title : `Compare operator not defined for recursive data types on C++20`
+### open_at : `2023-09-21T19:56:54Z`
+### link : https://github.com/llvm/llvm-project/issues/67056
+### status : `open`
+### tags : `c++20, clang:frontend, `
+### content : 
+Cross-posting https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111504
+
+The following code works on C++17 but not C++20:
+
+```C++
+#include <cstdint>
+#include <type_traits>
+#include <vector>
+
+template <typename T1, typename T2>
+static auto hasLessThanHelper(int)
+    -> decltype(std::declval<T1>() < std::declval<T2>(), std::true_type{});
+
+template <typename, typename>
+static auto hasLessThanHelper(long) -> std::false_type;
+
+template <typename T1, typename T2>
+struct hasLessThan : decltype(hasLessThanHelper<T1, T2>(0)) {};
+
+struct DynamicType {
+  using T1 = int64_t;
+  using T2 = std::vector<DynamicType>;
+};
+
+template <
+    typename DT,
+    typename = std::enable_if_t<
+        (hasLessThan<typename DT::T1, typename DT::T1>::value ||
+         hasLessThan<typename DT::T1, typename DT::T2>::value ||
+         hasLessThan<typename DT::T2, typename DT::T1>::value ||
+         hasLessThan<typename DT::T2, typename DT::T2>::value)>>
+inline constexpr bool operator<(const DT& x, const DT& y) {
+  // implementation omitted
+  return true;
+}
+
+int main() {
+  using DT = DynamicType;
+  // This assert works on C++17, but fails on C++20
+  static_assert(hasLessThan<std::vector<DT>, std::vector<DT>>::value);
+}
+```
+
+
+---
+
+# 32
+### compiler : `LLVM`
+### title : `-frounding-math is buggy at -O1 and above`
+### open_at : `2023-09-21T15:06:48Z`
+### link : https://github.com/llvm/llvm-project/issues/67028
+### status : `open`
+### tags : `llvm:optimizations, floating-point, `
+### content : 
+https://clang.llvm.org/docs/UsersManual.html says:
+> The option -frounding-math forces the compiler to honor the dynamically-set rounding mode. This prevents optimizations which might affect results if the rounding mode changes or is different from the default; for example, it prevents floating-point operations from being reordered across most calls and prevents constant-folding when the result is not exactly representable.
+
+But with Clang from 13 to 16, while it appears to make a difference at `-O0`, it seems ignored at higher optimization levels (assuming that `#pragma STDC FENV_ACCESS ON` is not used).
+
+For instance, consider the following C program (similar to the one on https://gitlab.inria.fr/core-math/core-math/-/issues/8 but with this pragma removed):
+
+https://godbolt.org/z/78jv57qfn
+
+```
+#include <stdio.h>
+#include <fenv.h>
+
+float foo (void) { return 0x1.fffffep127f * 0x1.fffffep127f; }
+
+int main (void)
+{
+  fesetround (FE_TONEAREST);
+  printf ("FE_TONEAREST: %a\n", foo ());
+  fesetround (FE_TOWARDZERO);
+  printf ("FE_TOWARDZERO: %a\n", foo ());
+  fesetround (FE_UPWARD);
+  printf ("FE_UPWARD: %a\n", foo ());
+  fesetround (FE_DOWNWARD);
+  printf ("FE_DOWNWARD: %a\n", foo ());
+  return 0;
+}
+```
+
+On an x86_64 Debian machine, with `-frounding-math` and `-O1` (or above), I get
+```
+FE_TONEAREST: inf
+FE_TOWARDZERO: inf
+FE_UPWARD: inf
+FE_DOWNWARD: inf
+```
+instead of
+```
+FE_TONEAREST: inf
+FE_TOWARDZERO: 0x1.fffffep+127
+FE_UPWARD: inf
+FE_DOWNWARD: 0x1.fffffep+127
+```
+
+Note: at least on this example, the pragma works at any optimization level, without the need of `-frounding-math`.`
+
+
+---
+
+# 33
+### compiler : `LLVM`
+### title : `Wrong code at -O3  on x86_64 [14 regression since 0d95b20]`
+### open_at : `2023-09-21T07:25:42Z`
+### link : https://github.com/llvm/llvm-project/issues/66986
+### status : `closed`
+### tags : `miscompilation, `
+### content : 
+clang at -O3 produced the wrong code.
+
+Bisected to 0d95b20b63d7acc459dc0b2a7b2e4f9924c0adce, which was committed by @xortator 
+
+Compiler explorer: https://godbolt.org/z/o9Mdccsfe
+
+```console
+% cat a.c
+int printf(const char *, ...);
+int a, b, c, d, e, g, h;
+unsigned int f, i;
+long j;
+int k() {
+  if (f < 2)
+    return d;
+  g = e / f;
+  return g;
+}
+int main() {
+  i = -1;
+  for (; i>0; ++i) {
+    h = 0;
+    for (; h < 5; h++)
+      j = 1;
+    for (; k() + i + j <= 4; j++) {
+      while (c)
+        ;
+      for (; b - 5 + h < 6;)
+        ;
+    }
+  }
+  printf("%d\n", a);
+}
+%
+% clang -O2 a.c && ./a.out
+0
+% clang -O3 a.c && ./a.out
+floating point exception
+% clang -fsanitize=address,undefined a.c && ./a.out
+0
+%
+```
+
+
+---
+
+# 34
+### compiler : `LLVM`
+### title : `avx register spill generates 20 extra instructions`
+### open_at : `2023-09-19T23:03:25Z`
+### link : https://github.com/llvm/llvm-project/issues/66837
+### status : `open`
+### tags : `backend:X86, llvm:optimizations, `
+### content : 
+
+https://godbolt.org/z/bWhxGb75h
+
+Changing instruction order from:
+
+```
+const __m128i va0 = _mm_broadcastq_epi64(_mm_loadl_epi64((const __m128i*) a0));
+const __m256i vxa0 = _mm256_cvtepi8_epi16(va0);
+a0 += 8;
+const __m128i va1 = _mm_broadcastq_epi64(_mm_loadl_epi64((const __m128i*) a1));
+const __m256i vxa1 = _mm256_cvtepi8_epi16(va1);
+a1 += 8;
+const __m128i va2 = _mm_broadcastq_epi64(_mm_loadl_epi64((const __m128i*) a2));
+const __m256i vxa2 = _mm256_cvtepi8_epi16(va2);
+a2 += 8;
+```
+
+to this:
+
+```
+const __m128i va0 = _mm_broadcastq_epi64(_mm_loadl_epi64((const __m128i*) a0));
+const __m128i va1 = _mm_broadcastq_epi64(_mm_loadl_epi64((const __m128i*) a1));
+const __m128i va2 = _mm_broadcastq_epi64(_mm_loadl_epi64((const __m128i*) a2));
+const __m256i vxa0 = _mm256_cvtepi8_epi16(va0);
+a0 += 8;
+const __m256i vxa1 = _mm256_cvtepi8_epi16(va1);
+a1 += 8;
+const __m256i vxa2 = _mm256_cvtepi8_epi16(va2);
+a2 += 8;
+```
+
+Causes a microkernel to go from 46 instructions to 60 instructions, due to register spill (of 1 vector)
+The generated code generates quite a few vmovdqa to shuffle register order
+
+Attached is preprocessed source
+
+[xnn_qd8_f32_qc8w_gemm_minmax_ukernel_3x8c8__avx2.txt](https://github.com/llvm/llvm-project/files/12667150/xnn_qd8_f32_qc8w_gemm_minmax_ukernel_3x8c8__avx2.txt)
+
+
+
+---
+
+# 35
+### compiler : `LLVM`
+### title : `Clang ssp-buffer-size misinterprets some IR-level padding as arrays`
+### open_at : `2023-09-18T22:06:38Z`
+### link : https://github.com/llvm/llvm-project/issues/66709
+### status : `open`
+### tags : `clang:codegen, `
+### content : 
+`-fstack-protector` inserts stack canaries into functions that have sufficiently large character buffers on the stack. I guess the idea is we don't want to pay for a stack protector on every function. So we say that, if the programmer (not the compiler) puts a character array somewhere, they are at risk of overflowing it, so it is worth adding a stack protector to just those functions.
+
+However, Clang sometimes lowers structs to IR types that contain explicit padding in the form of arrays. The SSP implementation seems to look at IR types, not C types. It then misreads this padding as a C character array. The default threshold of 8 is large enough that this rarely happens, but if one passes `--param=ssp-buffer-size=4` to the compiler, it becomes more common.
+
+동건 - 추가작성
+
+https://godbolt.org/z/nzPcEWKWb
+
+https://godbolt.org/z/WKnoPjW6e
+
+관련된 크롬 버그
+
+https://crbug.com/1484342
+
+See godbolt links below:
+https://godbolt.org/z/6nM453Kdh
+https://godbolt.org/z/cvo1sh87s
+
+Instead, it should only be looking at the C types. In so far as we believe large character stack buffers are more at risk of overflow, that heuristic should only apply to arrays from the programmer and not from the compiler.
+
+(This seems to be the cause of at least some of the binary size regression that Chrome sees when switching from Abseil's `absl::optional` to libc++'s `std::optional`. Abseil uses `bool; T` while libc++ uses `T; bool`. The ordering change tickles this bug and so we burn binary size by adding more stack protectors. Not what I expected to find when starting down this journey!)
+
+```cpp
+#include <stdint.h>
+#include <stdio.h>
+
+void MightOverflow(void *arg) {
+    short * data = (short *)arg;
+    data[9999] = 30;
+}
+
+void CharBuffer() {
+    char b[1024];
+    MightOverflow(b);
+}
+
+void ShortBuffer() {
+    short b[1024];
+    MightOverflow(b);
+}
+
+int main() {
+    ShortBuffer();
+}
+
+```
+
+---
+
+# 36
+### compiler : `LLVM`
+### title : `clang dies with SIGBUS compiling gtest-all.cc on 32-bit SPARC`
+### open_at : `2023-09-18T09:50:31Z`
+### link : https://github.com/llvm/llvm-project/issues/66620
+### status : `open`
+### tags : `clang, backend:Sparc, miscompilation, `
+### content : 
+<details><summary>오류 내용</summary>
+<p>
+
+When trying a 2-stage build on 32-bit Solaris/SPARC, `clang` dies in stage 2 compiling `gtest-all.cc`:
+```
+FAILED: projects/compiler-rt/lib/sanitizer_common/tests/SANITIZER_TEST_OBJECTS.gtest-all.cc.sparcv9.o /var/llvm/dist-sparc-release-stage2-A/tools/clang/stage2-bins/projects/compiler-rt/lib/sanitizer_common/tests/SANITIZER_TEST_OBJECTS.gtest-all.cc.sparcv9.o
+cd /var/llvm/dist-sparc-release-stage2-A/tools/clang/stage2-bins/projects/compiler-rt/lib/sanitizer_common/tests && /var/llvm/dist-sparc-release-stage2-A/tools/clang/stage2-bins/./bin/clang -Wthread-safety -Wthread-safety-reference -Wthread-safety-beta -g -Wno-covered-switch-default -Wno-suggest-override -DGTEST_NO_LLVM_SUPPORT=1 -DGTEST_HAS_RTTI=0 -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googletest/include -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googletest -DGTEST_NO_LLVM_SUPPORT=1 -DGTEST_HAS_RTTI=0 -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googlemock/include -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googlemock -I/vol/llvm/src/llvm-project/dist/compiler-rt/include -I/vol/llvm/src/llvm-project/dist/compiler-rt/lib -I/vol/llvm/src/llvm-project/dist/compiler-rt/lib/sanitizer_common -DSANITIZER_COMMON_NO_REDEFINE_BUILTINS -fno-rtti -O2 -Werror=sign-compare -Wno-gnu-zero-variadic-macro-arguments -gline-tables-only -O0 -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -m32 -c -o SANITIZER_TEST_OBJECTS.gtest-all.cc.sparc.o /vol/llvm/src/llvm-project/dist/third-party/unittest/googletest/src/gtest-all.cc
+
+Stack dump:
+0.	Program arguments: /var/llvm/dist-sparc-release-stage2-A/tools/clang/stage2-bins/./bin/clang -Wthread-safety -Wthread-safety-reference -Wthread-safety-beta -g -Wno-covered-switch-default -Wno-suggest-override -DGTEST_NO_LLVM_SUPPORT=1 -DGTEST_HAS_RTTI=0 -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googletest/include -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googletest -DGTEST_NO_LLVM_SUPPORT=1 -DGTEST_HAS_RTTI=0 -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googlemock/include -I/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googlemock -I/vol/llvm/src/llvm-project/dist/compiler-rt/include -I/vol/llvm/src/llvm-project/dist/compiler-rt/lib -I/vol/llvm/src/llvm-project/dist/compiler-rt/lib/sanitizer_common -DSANITIZER_COMMON_NO_REDEFINE_BUILTINS -fno-rtti -O2 -Werror=sign-compare -Wno-gnu-zero-variadic-macro-arguments -gline-tables-only -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -m32 -c -o SANITIZER_TEST_OBJECTS.gtest-all.cc.sparc.o /vol/llvm/src/llvm-project/dist/third-party/unittest/googletest/src/gtest-all.cc
+1.	/usr/include/sys/fcntl.h:26:1: current parser token 'extern'
+2.	/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googletest/src/gtest.cc:141:11: LLVM IR generation of declaration 'testing'
+3.	/vol/llvm/src/llvm-project/dist/llvm/../third-party/unittest/googletest/src/gtest.cc:523:23: Generating code for declaration 'testing::internal::UnitTestOptions::FilterMatchesTest'
+Stack dump without symbol names (ensure you have llvm-symbolizer in your PATH or set the environment var `LLVM_SYMBOLIZER_PATH` to point to it):
+0  clang-18  0x07af8604 llvm::sys::PrintStackTrace(llvm::raw_ostream&, int) + 36
+1  clang-18  0x07af78bc llvm::sys::CleanupOnSignal(unsigned int) + 440
+2  clang-18  0x07a49128 CrashRecoverySignalHandler(int) + 176
+3  libc.so.1 0xfe9644d0 __sighndlr + 12
+4  libc.so.1 0xfe956460 call_user_handler + 1044
+5  libc.so.1 0xfe956814 sigacthandler + 172
+6  clang-18  0x0822a208 clang::CodeGen::CodeGenFunction::pushLifetimeExtendedDestroy(clang::CodeGen::CleanupKind, clang::CodeGen::Address, clang::QualType, void (*)(clang::CodeGen::CodeGenFunction&, clang::CodeGen::Address, clang::QualType), bool) + 836
+7  clang-18  0x0824b680 pushTemporaryCleanup(clang::CodeGen::CodeGenFunction&, clang::MaterializeTemporaryExpr const*, clang::Expr const*, clang::CodeGen::Address) + 868
+8  clang-18  0x0824a6c8 clang::CodeGen::CodeGenFunction::EmitMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr const*) + 2972
+9  clang-18  0x08255048 clang::CodeGen::CodeGenFunction::EmitLValueHelper(clang::Expr const*, clang::CodeGen::KnownNonNull_t) + 2472
+10 clang-18  0x08254d64 clang::CodeGen::CodeGenFunction::EmitLValueHelper(clang::Expr const*, clang::CodeGen::KnownNonNull_t) + 1732
+11 clang-18  0x0824cf44 clang::CodeGen::CodeGenFunction::EmitReferenceBindingToExpr(clang::Expr const*) + 40
+12 clang-18  0x082281cc clang::CodeGen::CodeGenFunction::EmitExprAsInit(clang::Expr const*, clang::ValueDecl const*, clang::CodeGen::LValue, bool) + 124
+13 clang-18  0x08224f04 clang::CodeGen::CodeGenFunction::EmitAutoVarInit(clang::CodeGen::CodeGenFunction::AutoVarEmission const&) + 1836
+14 clang-18  0x0821ef84 clang::CodeGen::CodeGenFunction::EmitVarDecl(clang::VarDecl const&) + 372
+15 clang-18  0x0821ec08 clang::CodeGen::CodeGenFunction::EmitDecl(clang::Decl const&) + 1788
+16 clang-18  0x07e21c04 clang::CodeGen::CodeGenFunction::EmitDeclStmt(clang::DeclStmt const&) + 252
+17 clang-18  0x07e168a8 clang::CodeGen::CodeGenFunction::EmitSimpleStmt(clang::Stmt const*, llvm::ArrayRef<clang::Attr const*>) + 1016
+18 clang-18  0x07e14fc4 clang::CodeGen::CodeGenFunction::EmitStmt(clang::Stmt const*, llvm::ArrayRef<clang::Attr const*>) + 132
+19 clang-18  0x07e22ea8 clang::CodeGen::CodeGenFunction::EmitCompoundStmtWithoutScope(clang::CompoundStmt const&, bool, clang::CodeGen::AggValueSlot) + 312
+20 clang-18  0x07e98f80 clang::CodeGen::CodeGenFunction::EmitFunctionBody(clang::Stmt const*) + 260
+21 clang-18  0x07e99ff0 clang::CodeGen::CodeGenFunction::GenerateCode(clang::GlobalDecl, llvm::Function*, clang::CodeGen::CGFunctionInfo const&) + 2044
+22 clang-18  0x07ecdd98 clang::CodeGen::CodeGenModule::EmitGlobalFunctionDefinition(clang::GlobalDecl, llvm::GlobalValue*) + 604
+23 clang-18  0x07ec2550 clang::CodeGen::CodeGenModule::EmitGlobalDefinition(clang::GlobalDecl, llvm::GlobalValue*) + 724
+24 clang-18  0x07ec7f2c clang::CodeGen::CodeGenModule::EmitGlobal(clang::GlobalDecl) + 1596
+25 clang-18  0x07ec0d20 clang::CodeGen::CodeGenModule::EmitTopLevelDecl(clang::Decl*) + 1252
+26 clang-18  0x07ed6ef8 clang::CodeGen::CodeGenModule::EmitDeclContext(clang::DeclContext const*) + 88
+27 clang-18  0x07ec1000 clang::CodeGen::CodeGenModule::EmitTopLevelDecl(clang::Decl*) + 1988
+28 clang-18  0x07ed6ef8 clang::CodeGen::CodeGenModule::EmitDeclContext(clang::DeclContext const*) + 88
+29 clang-18  0x07ec1000 clang::CodeGen::CodeGenModule::EmitTopLevelDecl(clang::Decl*) + 1988
+30 clang-18  0x08fed448 (anonymous namespace)::CodeGeneratorImpl::HandleTopLevelDecl(clang::DeclGroupRef) + 196
+31 clang-18  0x08fe8e64 clang::BackendConsumer::HandleTopLevelDecl(clang::DeclGroupRef) + 216
+32 clang-18  0x0a7b8a20 clang::ParseAST(clang::Sema&, bool, bool) + 1064
+33 clang-18  0x086d83d8 clang::ASTFrontendAction::ExecuteAction() + 212
+34 clang-18  0x08fe6efc clang::CodeGenAction::ExecuteAction() + 168
+35 clang-18  0x086d79c8 clang::FrontendAction::Execute() + 100
+36 clang-18  0x0861a930 clang::CompilerInstance::ExecuteAction(clang::FrontendAction&) + 976
+37 clang-18  0x087e9df0 clang::ExecuteCompilerInvocation(clang::CompilerInstance*) + 640
+38 clang-18  0x04af0100 cc1_main(llvm::ArrayRef<char const*>, char const*, void*) + 3044
+39 clang-18  0x04aecd38 ExecuteCC1Tool(llvm::SmallVectorImpl<char const*>&, llvm::ToolContext const&) + 1284
+40 clang-18  0x08447664 void llvm::function_ref<void ()>::callback_fn<clang::driver::CC1Command::Execute(llvm::ArrayRef<std::optional<llvm::StringRef>>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>*, bool*) const::$_0>(int) + 16
+41 clang-18  0x07a48da8 llvm::CrashRecoveryContext::RunSafely(llvm::function_ref<void ()>) + 200
+42 clang-18  0x08446c20 clang::driver::CC1Command::Execute(llvm::ArrayRef<std::optional<llvm::StringRef>>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>*, bool*) const + 324
+43 clang-18  0x08404234 clang::driver::Compilation::ExecuteCommand(clang::driver::Command const&, clang::driver::Command const*&, bool) const + 696
+44 clang-18  0x084045fc clang::driver::Compilation::ExecuteJobs(clang::driver::JobList const&, llvm::SmallVectorImpl<std::pair<int, clang::driver::Command const*>>&, bool) const + 140
+45 clang-18  0x08423a38 clang::driver::Driver::ExecuteCompilation(clang::driver::Compilation&, llvm::SmallVectorImpl<std::pair<int, clang::driver::Command const*>>&) + 348
+46 clang-18  0x04aec220 clang_main(int, char**, llvm::ToolContext const&) + 14192
+47 clang-18  0x04afd2e4 main + 28
+48 clang-18  0x04ae8468 _start + 92
+```
+This only happens with a `Release` (or `RelWithDebInfo`) build, not in a `Debug` build.  Likewise, a `gcc`-compiled `clang` in stage 1 is fine, too.
+
+I could reduce the testcase to
+```
+$ cat gtest-all.ii
+inline namespace __cxx11 {
+struct basic_string {
+  ~basic_string();
+};
+} // namespace __cxx11
+basic_string GetOutputFormat() {
+  const basic_string &output_format = GetOutputFormat();
+}
+$ clang -m32 -O2 -w gtset-all.ii
+```
+`gdb` shows this is an unaligned access:`
+```
+Thread 2 received signal SIGBUS, Bus error.
+[Switching to Thread 1 (LWP 1)]
+0x0822b328 in (anonymous namespace)::DestroyObject::DestroyObject (
+    this=0xffbfacb4, type=..., 
+    destroyer=0x82045e8 <clang::CodeGen::CodeGenFunction::destroyCXXObject(clang::CodeGen::CodeGenFunction&, clang::CodeGen::Address, clang::QualType)>, 
+    addr=..., useEHCleanupForArray=<optimized out>)
+    at /vol/llvm/src/llvm-project/dist/clang/lib/CodeGen/CGDecl.cpp:502
+502	      : addr(addr), type(type), destroyer(destroyer),
+1: x/i $pc
+=> 0x822b328 <_ZN5clang7CodeGen15CodeGenFunction27pushLifetimeExtendedDestroyENS0_11CleanupKindENS0_7AddressENS_8QualTypeEPFvRS1_S3_S4_Eb+836>:	
+    sttw  %i0, [ %i3 + 0x10 ]
+(gdb) p/x $i3 + 0x10
+$6 = 0xffbfacbc
+```
+The target isn't 8-byte aligned as it should.`
+</p>
+</details>
+
+
+---
+
+# 37
+### compiler : `LLVM`
+### title : `Clang crash: Assertion `(Op == Instruction::BitCast || Op == Instruction::PtrToInt || Op == Instruction::IntToPtr) && "InsertNoopCastOfTo cannot perform non-noop casts!"' failed.`
+### open_at : `2023-09-18T07:14:54Z`
+### link : https://github.com/llvm/llvm-project/issues/66616
+### status : `open`
+### tags : `miscompilation, llvm:SCEV, `
+### content : 
+Clang crashes at -O2.
+
+Bisected to 20d798bd47ec5191de1b2a8a031da06a04e612e1, which was committed by @fhahn 
+
+Compiler explorer: https://godbolt.org/z/jh7G19x8e
+
+```console
+% cat a.c
+char *a;
+char b;
+long c;
+unsigned char d;
+static long e;
+long *f;
+int g;
+short(h)(short i, short j) { return i + j; }
+char k(int i) {
+  while (i--)
+    b += *a++;
+  return i;
+}
+void l() {
+  d = -10;
+  for (; (char)e + d != 38; d = h(d, 8))
+    c = (int)*f + g;
+  for (; k(c) <= 7; e++)
+    ;
+}
+int main() {}
+```
+
+<details><summary>컴파일 실패 내용</summary>
+<p>
+
+```bash
+% clang -O2 a.c
+clang-18: /tmp/tmpk5g_eggq/llvm/lib/Transforms/Utils/ScalarEvolutionExpander.cpp:161: llvm::Value *llvm::SCEVExpander::InsertNoopCastOfTo(llvm::Value *, llvm::Type *): Assertion (Op == Instruction::BitCast || Op == Instruction::PtrToInt || Op == Instruction::IntToPtr) && "InsertNoopCastOfTo cannot perform non-noop casts!" failed.
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+Stack dump:
+0.      Program arguments: /zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/clang-18 -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -dumpdir a- -disable-free -clear-ast-before-backend -main-file-name reduced.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=none -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/zdata/shaoli/realsmith/watchdir/reduced/case_jydTPMpX -fcoverage-compilation-dir=/zdata/shaoli/realsmith/watchdir/reduced/case_jydTPMpX -resource-dir /zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/lib/clang/18 -I /zdata/shaoli/compilers/csmith/include -internal-isystem /zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../x86_64-linux-gnu/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O2 -w -ferror-limit 19 -fgnuc-version=4.2.1 -fcolor-diagnostics -vectorize-loops -vectorize-slp -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o /tmp/reduced-86a4de.o -x c reduced.c
+1.      <eof> parser at end of file
+2.      Optimizer
+ #0 0x00007f1caba59f37 llvm::sys::PrintStackTrace(llvm::raw_ostream&, int) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x897f37)
+ #1 0x00007f1caba57abe llvm::sys::RunSignalHandlers() (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x895abe)
+ #2 0x00007f1caba5a5ff SignalHandler(int) Signals.cpp:0:0
+ #3 0x00007f1cb469f420 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x14420)
+ #4 0x00007f1caac7900b raise /build/glibc-SzIz7B/glibc-2.31/signal/../sysdeps/unix/sysv/linux/raise.c:51:1
+ #5 0x00007f1caac58859 abort /build/glibc-SzIz7B/glibc-2.31/stdlib/abort.c:81:7
+ #6 0x00007f1caac58729 get_sysdep_segment_value /build/glibc-SzIz7B/glibc-2.31/intl/loadmsgcat.c:509:8
+ #7 0x00007f1caac58729 _nl_load_domain /build/glibc-SzIz7B/glibc-2.31/intl/loadmsgcat.c:970:34
+ #8 0x00007f1caac69fd6 (/lib/x86_64-linux-gnu/libc.so.6+0x33fd6)
+ #9 0x00007f1cac9ea94f llvm::SCEVExpander::InsertNoopCastOfTo(llvm::Value*, llvm::Type*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182894f)
+#10 0x00007f1cac9f2f2d llvm::SCEVVisitor<llvm::SCEVExpander, llvm::Value*>::visit(llvm::SCEV const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x1830f2d)
+#11 0x00007f1cac9ecada llvm::SCEVExpander::expand(llvm::SCEV const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182aada)
+#12 0x00007f1cac9ec02e llvm::SCEVExpander::visitAddExpr(llvm::SCEVAddExpr const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182a02e)
+#13 0x00007f1cac9ecada llvm::SCEVExpander::expand(llvm::SCEV const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182aada)
+#14 0x00007f1cac9f2f8c llvm::SCEVVisitor<llvm::SCEVExpander, llvm::Value*>::visit(llvm::SCEV const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x1830f8c)
+#15 0x00007f1cac9ecada llvm::SCEVExpander::expand(llvm::SCEV const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182aada)
+#16 0x00007f1cac9eb173 llvm::SCEVExpander::expandAddToGEP(llvm::SCEV const*, llvm::Type*, llvm::Value*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x1829173)
+#17 0x00007f1cac9ec0f7 llvm::SCEVExpander::visitAddExpr(llvm::SCEVAddExpr const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182a0f7)
+#18 0x00007f1cac9ecada llvm::SCEVExpander::expand(llvm::SCEV const*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182aada)
+#19 0x00007f1cac9efebb llvm::SCEVExpander::expandCodeForImpl(llvm::SCEV const*, llvm::Type*, llvm::ilist_iterator<llvm::ilist_detail::node_options<llvm::Instruction, true, false, void>, false, false>) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x182debb)
+#20 0x00007f1cac9ae2a2 expandBounds(llvm::RuntimeCheckingPtrGroup const*, llvm::Loop*, llvm::Instruction*, llvm::SCEVExpander&, bool) LoopUtils.cpp:0:0
+#21 0x00007f1cac9aa71f llvm::addRuntimeChecks(llvm::Instruction*, llvm::Loop*, llvm::SmallVectorImpl<std::pair<llvm::RuntimeCheckingPtrGroup const*, llvm::RuntimeCheckingPtrGroup const*>> const&, llvm::SCEVExpander&, bool) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x17e871f)
+#22 0x00007f1cad224780 (anonymous namespace)::GeneratedRTChecks::Create(llvm::Loop*, llvm::LoopAccessInfo const&, llvm::SCEVPredicate const&, llvm::ElementCount, unsigned int) LoopVectorize.cpp:0:0
+#23 0x00007f1cad222b0d llvm::LoopVectorizePass::processLoop(llvm::Loop*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x2060b0d)
+#24 0x00007f1cad227d05 llvm::LoopVectorizePass::runImpl(llvm::Function&, llvm::ScalarEvolution&, llvm::LoopInfo&, llvm::TargetTransformInfo&, llvm::DominatorTree&, llvm::BlockFrequencyInfo*, llvm::TargetLibraryInfo*, llvm::DemandedBits&, llvm::AssumptionCache&, llvm::LoopAccessInfoManager&, llvm::OptimizationRemarkEmitter&, llvm::ProfileSummaryInfo*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x2065d05)
+#25 0x00007f1cad2286a6 llvm::LoopVectorizePass::run(llvm::Function&, llvm::AnalysisManager<llvm::Function>&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x20666a6)
+#26 0x00007f1cae43f98d llvm::detail::PassModel<llvm::Function, llvm::LoopVectorizePass, llvm::PreservedAnalyses, llvm::AnalysisManager<llvm::Function>>::run(llvm::Function&, llvm::AnalysisManager<llvm::Function>&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0x327d98d)
+#27 0x00007f1cabc4f2e4 llvm::PassManager<llvm::Function, llvm::AnalysisManager<llvm::Function>>::run(llvm::Function&, llvm::AnalysisManager<llvm::Function>&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0xa8d2e4)
+#28 0x00007f1cb1a88b7d llvm::detail::PassModel<llvm::Function, llvm::PassManager<llvm::Function, llvm::AnalysisManager<llvm::Function>>, llvm::PreservedAnalyses, llvm::AnalysisManager<llvm::Function>>::run(llvm::Function&, llvm::AnalysisManager<llvm::Function>&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0x1dbbb7d)
+#29 0x00007f1cabc543de llvm::ModuleToFunctionPassAdaptor::run(llvm::Module&, llvm::AnalysisManager<llvm::Module>&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0xa923de)
+#30 0x00007f1cb1a830ad llvm::detail::PassModel<llvm::Module, llvm::ModuleToFunctionPassAdaptor, llvm::PreservedAnalyses, llvm::AnalysisManager<llvm::Module>>::run(llvm::Module&, llvm::AnalysisManager<llvm::Module>&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0x1db60ad)
+#31 0x00007f1cabc4df64 llvm::PassManager<llvm::Module, llvm::AnalysisManager<llvm::Module>>::run(llvm::Module&, llvm::AnalysisManager<llvm::Module>&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libLLVM-18git.so+0xa8bf64)
+#32 0x00007f1cb1a7fcf5 (anonymous namespace)::EmitAssemblyHelper::RunOptimizationPipeline(clang::BackendAction, std::unique_ptr<llvm::raw_pwrite_stream, std::default_delete<llvm::raw_pwrite_stream>>&, std::unique_ptr<llvm::ToolOutputFile, std::default_delete<llvm::ToolOutputFile>>&) BackendUtil.cpp:0:0
+#33 0x00007f1cb1a76176 clang::EmitBackendOutput(clang::DiagnosticsEngine&, clang::HeaderSearchOptions const&, clang::CodeGenOptions const&, clang::TargetOptions const&, clang::LangOptions const&, llvm::StringRef, llvm::Module*, clang::BackendAction, llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem>, std::unique_ptr<llvm::raw_pwrite_stream, std::default_delete<llvm::raw_pwrite_stream>>) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0x1da9176)
+#34 0x00007f1cb1eb137e clang::BackendConsumer::HandleTranslationUnit(clang::ASTContext&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0x21e437e)
+#35 0x00007f1cb06cfbe4 clang::ParseAST(clang::Sema&, bool, bool) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0xa02be4)
+#36 0x00007f1cb2b4d7c0 clang::FrontendAction::Execute() (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0x2e807c0)
+#37 0x00007f1cb2abdd0f clang::CompilerInstance::ExecuteAction(clang::FrontendAction&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0x2df0d0f)
+#38 0x00007f1cb2be1877 clang::ExecuteCompilerInvocation(clang::CompilerInstance*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/../lib/libclang-cpp.so.18git+0x2f14877)
+#39 0x0000000000411bce cc1_main(llvm::ArrayRef<char const*>, char const*, void*) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/clang-18+0x411bce)
+#40 0x000000000040e7c1 ExecuteCC1Tool(llvm::SmallVectorImpl<char const*>&, llvm::ToolContext const&) driver.cpp:0:0
+#41 0x000000000040daaa clang_main(int, char**, llvm::ToolContext const&) (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/clang-18+0x40daaa)
+#42 0x000000000041d7b1 main (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/clang-18+0x41d7b1)
+#43 0x00007f1caac5a083 __libc_start_main /build/glibc-SzIz7B/glibc-2.31/csu/../csu/libc-start.c:342:3
+#44 0x000000000040ab3e _start (/zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin/clang-18+0x40ab3e)
+clang: error: unable to execute command: Aborted
+clang: error: clang frontend command failed due to signal (use -v to see invocation)
+clang version 18.0.0 (https://github.com/llvm/llvm-project.git 2f45b56728db10fa5c3ab0fe3652f6908ac9505d)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /zdata/shaoli/compilers/ccbuilder-compilers/clang-2f45b56728db10fa5c3ab0fe3652f6908ac9505d/bin
+clang: note: diagnostic msg:
+********************
+
+PLEASE ATTACH THE FOLLOWING FILES TO THE BUG REPORT:
+Preprocessed source(s) and associated run script(s) are located at:
+clang: note: diagnostic msg: /tmp/reduced-16c667.c
+clang: note: diagnostic msg: /tmp/reduced-16c667.sh
+clang: note: diagnostic msg:
+
+********************
+```
+</p>
+</details>
+
+
+---
+
+# 38
+### compiler : `LLVM`
+### title : `Clang frontend C++ crash with capture-default in concept`
+### open_at : `2023-09-18T06:11:25Z`
+### link : https://github.com/llvm/llvm-project/issues/66614
+### status : `open`
+### tags : `clang:frontend, concepts, confirmed, lambda, `
+### content : 
+To quickly reproduce: https://gcc.godbolt.org/z/1jYx7cocf (assertion-trunk)
+
+```cpp
+#include <concepts>
+#include <type_traits>
+
+template <typename  A, typename  C>
+concept l = requires(A a, C c) {
+    {
+        [&](A& a) -> decltype(a += c){}
+    };
+};
+```
+
+Compiling the above invalid code crashes clang `clang++ -x c++ --std=c++20 `, crashes locally using clang-17.0 (a10019a), also on trunk with assertion (see godbolt link) 
+
+Note: after removing the default capture (i.e., &), the code compiles correctly `
+
+
+---
+
+# 39
+### compiler : `LLVM`
+### title : `Clang frontend C++ crash with atomic constraints`
+### open_at : `2023-09-18T05:48:33Z`
+### link : https://github.com/llvm/llvm-project/issues/66612
+### status : `closed`
+### tags : `clang:frontend, concepts, confirmed, `
+### content : 
+To quickly reproduce: https://gcc.godbolt.org/z/Gc1Y17PKf (assertion-trunk)
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+template <typename T>
+concept Iterator = requires(T a) {
+  { a } -> std::same_as<T>;
+};
+
+template <typename T>
+concept Container = requires(T a) {
+  { std::end } -> Iterator;
+};
+```
+
+Compiling the above code crashes clang `clang++ -x c++ --std=c++20 `, crashes locally using clang-17.0 (a10019a), also on trunk with assertion (see godbolt link) `
+
+
+---
+
+# 40
+### compiler : `LLVM`
+### title : `Behavior of overflowing floating-point to integer conversions`
+### open_at : `2023-09-17T20:43:09Z`
+### link : https://github.com/llvm/llvm-project/issues/66603
+### status : `open`
+### tags : `llvm:optimizations, undefined behaviour, `
+### content : 
+This issue is either:
+
+a) a missed optimization in the x86-64 backend; or  
+b) a wrong optimization in the aarch64 backend.
+
+Consider the following code:
+
+```c
+#include<stdint.h>
+#include<stdbool.h>
+bool is_i8(double x) {
+    return x == (int8_t) x;
+}
+bool is_i32(double x) {
+    return x == (int32_t)x;
+}
+```
+
+As per the C standard, these functions invoke undefined behavior if given arguments that, rounded to an integer, don't fit in the desired type. Thus, `is_i8` can always be replaced with `is_i32` ([alive2 proof](https://alive2.llvm.org/ce/z/TokdT9) from the optimized IR).
+
+However, the x86-64 backend does not do this, and thus `is_i8` has an unnecessary `movsx eax, al` instruction that can be eliminated. The aarch64 backend does do this optimization. [compiler explorer](https://godbolt.org/z/Kj5hEjcq5).
+
+GCC preserves the int8_t cast on both x86-64 and ARM64 (and everything else I tested in CE): https://godbolt.org/z/78MbdGbPz.
+
+And while C does allow the optimization in question, it means that `x == (T)x` cannot be used as a check for whether the floating-point value `x` fits in the integer type `T` (even though it would work if the conversion gave any valid value of `T` in place of UB/poison). And, as far as I can tell, there is no alternative way to do a check like this anywhere near as performantly, without writing platform-specific assembly, which is, IMO, a quite problematic issue, though not really a clang-specific one.`
+
+
+---
+
+# 41
+### compiler : `LLVM`
+### title : `wrong type of ternary expression involving composite pointer type with array of unknown bound`
+### open_at : `2023-09-17T16:08:56Z`
+### link : https://github.com/llvm/llvm-project/issues/66599
+### status : `open`
+### tags : `c++, clang:frontend, `
+### content : 
+Version: clang 16.0.0
+flags: `-std=c++20 -O2 -pedantic-errors`
+
+### Observed behavior
+
+```cpp
+template <typename T>
+void f();
+
+void foo() {
+    decltype(auto) ptr
+    = true
+      ? (int(*)[42])nullptr
+      : (int(*)[])nullptr;
+    f<decltype(ptr)>(); // calls f<int const (*) []>()
+}
+```
+
+https://godbolt.org/z/TvaqEKr4v
+
+### Expected behavior
+
+The type of the ternary expression should be `int (*)[]`.
+
+It seems that clang is overeager in applying https://timsong-cpp.github.io/cppwp/n4868/conv.qual#3.3 .
+$P_1^3$ is different from one of the source $P_1$-s, which means that `const` is added for every $cv_k$ for $0 < k < 1$, which should be none of them. I think clang treats the right bound as inclusive here when the difference between the two types is in $P_i$.
+
+### Notes
+
+* GCC doesn't implement bringing ternary arguments to composite pointer type when array of unknown bound is involved https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100189.
+* The conversions with array of unknown bound were added in [P0388](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0388r4.html).
+
+
+---
+
+# 42
+### compiler : `LLVM`
+### title : `Complex division doesn't respect pragma float_control`
+### open_at : `2023-09-15T22:34:32Z`
+### link : https://github.com/llvm/llvm-project/issues/66555
+### status : `open`
+### tags : `clang:codegen, floating-point, `
+### content : 
+If I am compiling with fast-math enabled, but use #pragma float_control(precise, on) for a function, complex division within that function is still represented as if fast math were enabled.
+
+```
+#pragma float_control(precise, on)
+complex double foo(complex double x, complex double y) {
+  return x / y;
+}
+```
+https://godbolt.org/z/3sP44nEE5
+
+This is happening because ComplexExprEmitter::EmitBinDiv() is checking CGF.getLangOpts().FastMath and not looking for the possibility that the option is being overridden by a pragma.
+
+
+---
+
+# 43
+### compiler : `LLVM`
+### title : Sanitizer `pointer-overflow` does not appear to function
+### open_at : `2023-09-15T00:31:39Z`
+### link : https://github.com/llvm/llvm-project/issues/66451
+### status : `closed`
+### tags : `clang:codegen, compiler-rt:ubsan, `
+### content : 
+Using `-fsanitize=pointer-overflow` doesn't appear to provide any checking on pointer math. GCC's implementation correctly triggers if `NULL` is operated on or if a value would wrap around.
+
+https://godbolt.org/z/1c6ec9TTP
+
+```
+#include <stdlib.h>
+#include <stdio.h>
+
+/* Using stderr for all output or else godbolt doesn't intermix output. */
+int main(int argc, char *argv[]) {
+    void *p = NULL;
+
+    fprintf(stderr, "%p (%zu)\n", p, (unsigned long)p);
+
+    /* argc is a stand-in for "1" to avoid optimization */
+    p -= argc;
+
+    fprintf(stderr, "%p (%zu)\n", p, (unsigned long)p);
+
+    p += argc;
+
+    fprintf(stderr, "%p (%zu)\n", p, (unsigned long)p);
+
+    return 0;
+}
+```
+
+Clang just shows the value wrapping:
+
+```
+(nil) (0)
+0xffffffffffffffff (18446744073709551615)
+(nil) (0)
+```
+
+But GCC will catch it:
+
+```
+(nil) (0)
+/app/example.c:11:7: runtime error: applying non-zero offset 18446744073709551615 to null pointer
+0xffffffffffffffff (18446744073709551615)
+/app/example.c:15:7: runtime error: applying non-zero offset to non-null pointer 0xffffffffffffffff produced null pointer
+(nil) (0)
+```
+
+
+---
+
+# 44
+### compiler : `LLVM`
+### title : `[Bug][AArch64] Ensure SVE function operands passed via memory are initialised.`
+### open_at : `2023-09-14T13:04:19Z`
+### link : https://github.com/llvm/llvm-project/issues/66370
+### status : `closed`
+### tags : `backend:AArch64, miscompilation, release:backport, SVE, `
+### content : 
+Taking the example below it can be seen that `j` is not initialised by `main` when calling `F9`, which means `F9` reads uninitialised stack space.
+
+```
+#include <arm_sve.h>
+#include <assert.h>
+
+__attribute((noinline)) void F9(double a, double b, double c, double d,
+                                double e, double f, double g, double h,
+                                double i, svfloat32_t j) {
+  assert(!svptest_any(svptrue_b32(),
+                      svcmpne_f32(svptrue_b32(), j, svdup_f32(2.0f))));
+}
+
+int main() {
+  svfloat32_t j = svdup_f32(2.0f);
+  F9(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, j);
+  return 0;
+}
+```
+
+
+---
+
+# 45
+### compiler : `LLVM`
+### title : `[AArch64] Miscompilation when stack tagging is enabled in AArch64`
+### open_at : `2023-09-14T08:14:52Z`
+### link : https://github.com/llvm/llvm-project/issues/66338
+### status : `open`
+### tags : `backend:AArch64, llvm:codegen, miscompilation, `
+### content : 
+
+**이거랑 중복임 이거 확인하면 될듯**
+
+https://github.com/llvm/llvm-project/issues/64309
+
+Here is the reduced test : [https://godbolt.org/](https://godbolt.org/)
+There is a **br** instruction (line 16) at end of the **entry** block which is suppose to **read the NZCV flag** edited by previous **cmp** instruction (line 14) and branch accordingly. But the **stg loop** gets in the way and edits the **nzcv flag** which is not handled properly.
+
+This results in mis compiled assembly
+```
+  cmp     w0, #10  
+LBB0_1:                                
+  st2g    x9, [x9], #32  
+  subs    x8, x8, #32   
+  b.ne    .LBB0_1
+  b.ge    .LBB0_4
+```
+        
+Here b.ge jumps based on NZCV edited by subs instruction rather than from cmp instruction.
+
+Run Command
+```
+llc -mtriple=aarch64 -mattr=+mte -aarch64-order-frame-objects=0 settag.ll
+```
+settag.ll
+```
+declare void @llvm.aarch64.settag(ptr %p, i64 %a)
+; Function Attrs: nounwind
+declare i32 @printf(ptr, ...) #0
+
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+define i32 @stg_func(i32 %in) {
+entry:
+
+  %a = alloca i8, i32 16, align 16
+  %b = alloca i8, i32 512, align 16
+  %c = alloca i8, i32 16, align 16
+  call void @llvm.aarch64.settag(ptr %a, i64 16)
+  call void @llvm.aarch64.settag(ptr %b, i64 512)
+  %cmp = icmp slt i32 %in, 10
+  call void @llvm.aarch64.settag(ptr %c, i64 16)
+  br i1 %cmp, label %return0, label %return1
+
+return0:                                           ; preds = %entry
+  %call = call i32 (ptr, ...) @printf(ptr @.str, i32 10) #1
+  ret i32 0
+
+return1:
+  ret i32 1
+}
+```
+
+This is observed after the patch : [5e612bc](https://github.com/llvm/llvm-project/commit/5e612bc291347d364f1d47c37f0d34eb6474b9b5)
+As this patch expands stg loops to b.ne instead of Bcc used earlier
+
+
+
+---
+
+# 46
+### compiler : `LLVM`
+### title : `[clang] Main Function Missing Due to Incorrect Infinite Loop Optimization`
+### open_at : `2023-09-14T00:52:45Z`
+### link : https://github.com/llvm/llvm-project/issues/66307
+### status : `closed`
+### tags : `clang:codegen, `
+### content : 
+We are submitting this report to bring to your attention an issue that I have encountered while using clang compiler, specifically related to compiler optimization. While working with clang compiler, I have observed an error that seems to be related to optimization levels `O1`, `O2`, and `O3`. Although I had expected an infinite loop to occur when applying these optimization options, I have instead encountered an unexpected termination of the main function.
+
+I have conducted extensive research and testing to pinpoint the root cause of this problem, but unfortunately, my efforts have not yielded a conclusive solution. Given the complexity of LLVM and its extensive code base, I believe that your expertise and resources can shed light on this issue and help clarify its underlying causes.
+
+# Extended Description
+### **Proof of Concept to trigger the bug**
+```C
+#include <stdint.h>
+
+uint8_t uint8_sub(uint8_t ui1, uint8_t ui2) {
+  return ui1 - ui2;
+}
+
+int main() {
+    int32_t i;
+    for(i = 0; i > (-22); i = uint8_sub(i, 1)) { }
+    return 0;
+}
+```
+While it was anticipated that an infinite loop would ensue when employing all optimization options, the principal function becomes non-existent, leading to anomalous termination across `O1`, `O2`, and `O3` optimization levels.
+### Expected Result
+```bash
+# version
+$ clang-18 --version
+clang version 18.0.0 (https://github.com/llvm/llvm-project.git 4706251a3186c34da0ee8fd894f7e6b095da8fdc)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /home/dongFiles/compiler_trunk/llvm-project/build/bin
+
+# compile with O0 optimization
+$ clang-18 target.c -o clang_O0 -O0 
+
+# correct result: infinite loop
+$ ./clang_O0 # Infinite loop                                                                     
+^C
+```
+### Clang Result (incorrect)
+- **clang x64 (incorrect)**
+```bash
+$ clang-18 --version
+clang version 18.0.0 (https://github.com/llvm/llvm-project.git 4706251a3186c34da0ee8fd894f7e6b095da8fdc)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /home/dongFiles/compiler_trunk/llvm-project/build/bin
+
+$ clang-18 target.c -o clang_O1 -O1
+$ clang-18 target.c -o clang_O2 -O2
+$ clang-18 target.c -o clang_O3 -O3
+
+$ ./clang_O1 
+$ echo $?   # Abnormal termination
+64
+$ ./clang_O2 
+$ echo $?   # Abnormal termination
+64
+$ ./clang_O3 
+$ echo $?   # Abnormal termination
+64
+```
+- **clang aarch64 (incorrect)**
+```bash
+$ clang-18 --target=aarch64-linux-gnu target.c -o clang_O0_aarch64 -O0
+$ clang-18 --target=aarch64-linux-gnu target.c -o clang_O1_aarch64 -O1
+$ clang-18 --target=aarch64-linux-gnu target.c -o clang_O2_aarch64 -O2
+$ clang-18 --target=aarch64-linux-gnu target.c -o clang_O3_aarch64 -O3
+
+$ ./clang_O1_aarch64 
+$ echo $?    # Abnormal termination
+1
+$ ./clang_O2_aarch64 
+$ echo $?    # Abnormal termination
+1
+$ ./clang_O3_aarch64 
+$ echo $?    # Abnormal termination
+1
+```
+- **clang x64 O0, O1, O2, O3 : https://godbolt.org/z/sKsh6Tdv1**
+- **clang aarch64 O0, O1, O2, O3 : https://godbolt.org/z/PTG47q6v9**
+### Comparison to GCC Result (correct)
+```bash
+$ gcc-trunk --version                                                    
+gcc-trunk (GCC) 14.0.0 20230913 (experimental)
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+$ gcc-trunk target.c -o gcc_O0 -O0 
+$ gcc-trunk target.c -o gcc_O1 -O1
+$ gcc-trunk target.c -o gcc_O2 -O2
+$ gcc-trunk target.c -o gcc_O3 -O3 
+$ ./gcc_O0   # Infinite loop   
+^C
+$ ./gcc_O1   # Infinite loop   
+^C
+$ ./gcc_O2   # Infinite loop   
+^C
+$ ./gcc_O3   # Infinite loop
+^C
+```
+- **gcc x64 O0, O1, O2, O3 : https://godbolt.org/z/5YM9r56EM**
+- **gcc aarch64 O0, O1, O2, O3 : https://godbolt.org/z/TGdvGP9Ws**
+
+
+---
+
+# 47
+### compiler : `LLVM`
+### title : `SSP Strong with `-fexceptions` causing code-gen change on a C compilation with a `noreturn` attribute`
+### open_at : `2023-09-13T23:04:16Z`
+### link : https://github.com/llvm/llvm-project/issues/66303
+### status : `open`
+### tags : `clang:codegen, regression, `
+### content : 
+When compiled with SSP Strong (`-fstack-protector-strong`), the following C test-case produces different code depending on whether Exception Handling is enabled:
+
+    extern void my_exit(void) __attribute__((__noreturn__));
+    extern void bar(int *);
+
+    void foo(void) {
+      int buf[10];
+      bar(buf);
+      my_exit();
+    }
+
+Here is what happens with a modern x86_64 Clang (tested with `main` 3755ea93b4f7):
+
+```
+$ clang -S -O2 -fstack-protector-strong -o test.O2.s test.c
+$ clang -S -O2 -fstack-protector-strong -fexceptions -o test.O2.eh.s test.c
+$ diff test.O2.s test.O2.eh.s
+9,10c9,12
+<       subq    $40, %rsp
+<       .cfi_def_cfa_offset 48
+---
+>       subq    $56, %rsp
+>       .cfi_def_cfa_offset 64
+>       movq    %fs:40, %rax
+>       movq    %rax, 48(%rsp)
+12a15,18
+>       movq    %fs:40, %rax
+>       cmpq    48(%rsp), %rax
+>       jne     .LBB0_2
+> # %bb.1:                                # %SP_return
+13a20,21
+> .LBB0_2:                                # %CallStackCheckFailBlk
+>       callq   __stack_chk_fail@PLT
+20a29
+>       .addrsig_sym __stack_chk_fail
+$
+```
+
+Enabling Exception Handling in C compilations shouldn't change the generated code.  More directly, the problem here is that in compiling a `noreturn` C function with `-fexceptions`, we are enabling the generation of the SSP canary, due to the concern of a security hole in exception-handling-unwinding, described in:
+https://bugs.chromium.org/p/llvm/issues/detail?id=30
+
+But there isn't any unwinding in a C program, regardless of whether `-fexceptions` was specified.  So that SSP support isn't needed.  And more generally, turning on `-fexceptions` should be a no-op in compiling C code.  Is this a wider (and latent) Clang issue for C compilations, in that we normally tag C functions as `nounwind`, and turning on `-fexceptions` shouldn't change that?
+
+This is a regression in llvm16 (initially related to d656ae280957), and as noted above it still exists in `main`.  (A related aspect was partially addressed in llvm17 fc4494dffa54.  And that was cherry-picked to the llvm16 release (bf80902fdd43).)
+
+
+---
+
+# 48
+### compiler : `LLVM`
+### title : [clang] Issues with determining valid constant expressions in `cxx2b`
+### open_at : `2023-09-13T17:31:50Z`
+### link : https://github.com/llvm/llvm-project/issues/66262
+### status : `closed`
+### tags : `c++20, clang:frontend, clang:diagnostics, `
+### content : 
+C++23 permits a variable of non-literal type to be defined in a constant expression scope, but clang seems to have a hard time handling it. The following code does not compile with `-std=cxx2b` on latest clang:
+```cpp
+struct A { int y; };
+struct B : virtual public A {};
+struct X : public B {};
+
+constexpr void foo() {
+  X x;
+  x.B::y = 1;
+}
+```
+Godbolt: https://godbolt.org/z/rTdaf545e.
+
+
+---
+
+
+# 49
+### compiler : `LLVM`
+### title : `Clang incorrectly complains about default template argument not being reachable `
+### open_at : `2023-09-13T17:17:42Z`
+### link : https://github.com/llvm/llvm-project/issues/66255
+### status : `open`
+### tags : `c++20, clang:modules, `
+### content : 
+Run a compiler on this code:
+```cpp
+// --- foo.cppm
+export module foo;
+
+export struct partial {};
+export template <class T, class Cat = partial> concept is_comparable = true;
+
+// --- bar.cppm
+export module bar;
+
+import foo;
+template <class T>
+void func() requires is_comparable<T> {}
+```
+
+The exact commands are:
+```sh
+$ clang++ -std=c++20 --precompile foo.cppm
+$ clang++ -std=c++20 --precompile bar.cppm -fmodule-file=foo.pcm
+```
+
+Expected results: code compiles with no errors.
+Actual: Clang produces the following error when compiling the module `bar`:
+```sh
+bar.cppm:6:22: error: default argument of 'is_comparable' must be imported from module 'foo' before it is required
+void func() requires is_comparable<T> {}
+                     ^
+foo.cppm:5:39: note: default argument declared here is not reachable
+export template <class T, class Cat = partial> concept is_comparable = true;
+                                      ^
+1 error generated.
+```
+
+
+---
+
+# 50
+### compiler : `LLVM`
+### title : `SLPVectorizer incorrectly reorders select operands`
+### open_at : `2023-09-13T07:10:49Z`
+### link : https://github.com/llvm/llvm-project/issues/66176
+### status : `closed`
+### tags : `miscompilation, llvm:SLPVectorizer, `
+### content : 
+clang at -O2/3 produced the wrong code.
+
+Bisected to d01aec4c769d50fb92e86decd41d077c94105841, which was committed by @nikic 
+
+Compiler explorer: https://godbolt.org/z/9bhhc5rGM
+
+```console
+% cat a.c
+int printf(const char *, ...);
+int a, c;
+long b, g;
+static int d[1] = {5};
+unsigned h;
+long *i() {
+  c = 0;
+  for (; c <= 2; c++) {
+    for (;;) {
+      char e[1] = {97};
+      char f = *e + c;
+      
+      if (d[f - 97]) {
+        int *j[] = {&d[0], &d[0]};
+        h++;
+        break;
+      }
+      return &b;
+    }
+    for (; h <= 2;)
+      return &g;
+  }
+  for (;;)
+    ;
+}
+int main() {
+  i();
+  printf("%d\n", a);
+}
+%
+% clang -O0 a.c && ./a.out
+0
+% clang -O2 a.c
+% ./a.out
+(Timeout)
+%
+```
+
+
+---
+
+
+# 51
+### compiler : `LLVM`
+### title : `[clang][vectorize] -O2 vectorize will get wrong result`
+### open_at : `2023-09-13T01:21:35Z`
+### link : https://github.com/llvm/llvm-project/issues/66163
+### status : `open`
+### tags : `miscompilation, vectorization, `
+### content : 
+clang: 15.0.4 arm64be
+#### demo.c
+
+```
+#include <stdio.h>
+#define N 32
+int a[N]={0};
+int b[N]={0,0,1,0,
+          0,0,1,0,
+          0,0,1,0,
+          0,0,1,0,
+          0,0,1,0,
+          0,0,1,0,
+          0,0,1,0,
+          0,0,1,0};
+int k[N];
+
+int main () {
+    for (int i = 0; i < N/4; i++) {
+        k[4*i] = a[4*i] < b[4*i] ? 1 : 0;
+        k[4*i+1] = a[4*i+1] < b[4*i+1] ? 1 : 0;
+        k[4*i+2] = a[4*i+2] < b[4*i+2] ? 1 : 0;
+        k[4*i+3] = a[4*i+3] < b[4*i+3] ? 1 : 0;
+    }
+
+    for (int i = 0; i < N/4; i++) {
+        printf("%d, %d, %d, %d\n",k[4*i],k[4*i+1],k[4*i+2],k[4*i+3]);
+    }
+    return 0;
+}
+```
+
+#### compile command
+
+```
+clang demo.c -o demo.exe -static -O2
+```
+
+#### output
+
+wrong：
+
+```
+1, 0, 1, 0
+1, 0, 1, 0
+1, 0, 1, 0
+1, 0, 1, 0
+1, 0, 1, 0
+1, 0, 1, 0
+1, 0, 1, 0
+1, 0, 1, 0
+```
+It's a vectorize problem : with`-fno-vectorize` option，get result right
+
+```
+0, 0, 1, 0
+0, 0, 1, 0
+0, 0, 1, 0
+0, 0, 1, 0
+0, 0, 1, 0
+0, 0, 1, 0
+0, 0, 1, 0
+0, 0, 1, 0
+```
+
+through  `-mllvm -opt-bisect-limit=` command can locate the pass that caused the error is `InstCombinePass`
+
+
+
+---
+
+# 52
+### compiler : `LLVM`
+### title : `The combination of -fno-rtti -fexceptions is very brittle`
+### open_at : `2023-09-12T17:46:39Z`
+### link : https://github.com/llvm/llvm-project/issues/66117
+### status : `open`
+### tags : `clang, c++, `
+### content : 
+The combination of `-fno-rtti` and `-fexceptions` is not supported very well, and we've seen several issues related to that internally at Apple. This bug report captures an analysis of this issue I did years ago to try to make it visible to the larger community.
+
+Current behaviour
+================
+When both these options are specified, we don't generate RTTI for types, except when a type is thrown, at which point we generate some minimal RTTI in the TU where it is thrown (I am not sure whether the "minimal RTTI is exactly the same as "normal RTTI"). Also note that we don't generate RTTI even in the place where a key function exists, and similarly we don't assume that other TUs have a definition of the RTTI when a key function exists.
+
+Problem with the current approach
+=================================
+Let's say some TU `a.cpp` built with `-fno-rtti -fexceptions` calls a function (defined in some other TU) that can throw a type `E`, and tries to catch `E`. Then, let's say that function is defined in some other TU `b.cpp` built with `-frtti -fexceptions` throws a type `E`. Let's also assume that another TU `c.cpp` built with `-frtti -fexceptions` defines the RTTI for E (through a key function, for example). The problem here is that in `a.cpp`, we'll generate minimal RTTI for E, and in `b.cpp` we'll use the normal RTTI assumed to be in `c.cpp` (because there's a key function). Since the two RTTIs don't get de-duplicated, we get a type identity mismatch in `a.cpp` and `b.cpp`, and the exception isn't caught.
+
+Here's a minimal working example:
+
+```cpp
+#/usr/bin/env bash
+
+cat <<EOF > a.cpp
+struct E { virtual ~E(); };
+extern void f();
+int main() {
+    try {
+        f();
+    } catch (E const&) { // tries catching E with RTTI from a.o
+
+    }
+}
+EOF
+
+cat <<EOF > b.cpp
+struct E { virtual ~E(); };
+extern void f() { throw E{}; } // throws E with RTTI from c.o
+EOF
+
+cat <<EOF > c.cpp
+struct E { virtual ~E(); };
+E::~E() { } // key function
+EOF
+
+clang++ a.cpp -fno-rtti -fexceptions -std=c++11 -c -o a.o
+clang++ b.cpp -frtti -fexceptions -std=c++11 -c -o b.o
+clang++ c.cpp -frtti -fexceptions -std=c++11 -c -o c.o
+clang++ b.o c.o -shared -o b.dylib
+clang++ a.o b.dylib -o a.exe
+nm a.o b.o c.o a.exe b.dylib | c++filt
+./a.exe
+```
+
+To map this example to reality, imagine that `E` is something like `std::exception` (or a derived class), that `b.dylib` is `libc++.dylib`, and that `a.exe` is a user program built with `-fno-rtti -fexceptions`. It becomes clear why people are having problems with the feature.
+
+I once discussed this issue with @dexonsmith and we had discussed this potential solution:
+* Add an attribute __generate_rtti__ (name TBD)
+* When you’d normally generate RTTI for a type and currently suppress the RTTI generation based on whether -fno-rtti is present, instead check whether the type has the attribute and still generate full RTTI if it has it.
+* When you try to throw a type with `-fno-rtti -fexceptions`, you get:
+    * a warning if the type doesn’t have the attribute, and minimal RTTI gets generated (like today, for backwards compatibility)
+    * the normal behaviour (like when -fno-rtti is not specified) if the type has the attribute. In particular, this means that no RTTI is generated if we can tell it’s somewhere else (e.g. when there’s a key function), and full RTTI (that the linker can dedupe) is generated when we can’t tell for sure.
+
+
+rdar://58055046`
+
+
+---
+
+# 53
+### compiler : `LLVM`
+### title : `Wrong code at -Os on x86_64 (recent regression since 6ed152a) `
+### open_at : `2023-09-12T10:31:56Z`
+### link : https://github.com/llvm/llvm-project/issues/66066
+### status : `closed`
+### tags : `miscompilation, llvm:SCEV, `
+### content : 
+Clang at -Os produced the wrong code.
+
+Bisected to 6ed152aff4aab6307ecaab64a544d0524ea5f50e, which was committed by @caojoshua 
+
+Compiler explorer: https://godbolt.org/z/aMEWqd9dP
+
+```cpp
+% cat a.c
+int printf(const char *, ...);
+int a, b, c;
+long d;
+const unsigned *e;
+const unsigned **f[3];
+static char(g)(unsigned h, int j) { return h > j ? h : h << j; }
+static short k() {
+  char l = 1;
+  b = 0;
+  for (; b <= 3; b++) {
+    char *m = &l;
+    int *n = &c;
+    int i = 0;
+    for (; i < 3; i++)
+      f[i] = &e;
+    *n = g((*m)--, 7);
+    if (*n)
+      ;
+    else {
+      for (; i < 9; i++)
+        f[0] || (d = 2);
+      if (0 < *n)
+        ;
+      else
+        return 0;
+    }
+    printf("%d\n", *n);
+  }
+  return 1;
+}
+int main() {
+  k();
+}
+%
+% clang -O0 a.c && ./a.out
+-128
+0
+% clang -Os a.c && ./a.out
+-128
+0
+-128
+0
+%
+```
+
+
+---
+
+# 54
+### compiler : `LLVM`
+### title : `[Inliner] Should we inline callee containing llvm.frameaddress?`
+### open_at : `2023-09-12T09:31:26Z`
+### link : https://github.com/llvm/llvm-project/issues/66059
+### status : `open`
+### tags : `llvm:optimizations, `
+### content : 
+For code
+```c++
+#include <iostream>
+
+void foo() {
+  std::cout << __builtin_frame_address(0) << std::endl;
+}
+
+int main() {
+  std::cout << __builtin_frame_address(0) << std::endl;
+  foo();
+  return 0;
+}
+```
+Using trunk's clang, with `-O2`, the output is
+```
+0x7ffd0501a2c0
+0x7ffd0501a2a0
+```
+With `-O3`, the output is
+```
+0x7ffd97138270
+0x7ffd97138270
+```
+We have `InlinerPass` enabled at `O3`, which inlines callee(`foo`)'s `llvm.frameaddress`. The different behaviors at `O2` and `O3` affects IBM OpenXL C/C++ compiler when compiling and running `compiler-rt/test/asan/TestCases/Posix/stack-overflow.cpp`.
+
+```cpp
+// stack-overflow.cpp
+// Test ASan detection of stack-overflow condition.
+
+// RUN: %clangxx_asan -O0 %s -DSMALL_FRAME -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O3 %s -DSMALL_FRAME -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O0 %s -DSAVE_ALL_THE_REGISTERS -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O3 %s -DSAVE_ALL_THE_REGISTERS -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O0 %s -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O3 %s -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+
+// RUN: %clangxx_asan -O0 %s -DTHREAD -DSMALL_FRAME -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O3 %s -DTHREAD -DSMALL_FRAME -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O0 %s -DTHREAD -DSAVE_ALL_THE_REGISTERS -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O3 %s -DTHREAD -DSAVE_ALL_THE_REGISTERS -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O0 %s -DTHREAD -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: %clangxx_asan -O3 %s -DTHREAD -pthread -o %t && %env_asan_opts=use_sigaltstack=1 not %run %t 2>&1 | FileCheck %s
+// RUN: not %run %t 2>&1 | FileCheck %s
+// REQUIRES: stable-runtime
+
+// UNSUPPORTED: ios
+
+#include <assert.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sanitizer/asan_interface.h>
+
+const int BS = 1024;
+volatile char x;
+volatile int y = 1;
+volatile int z0, z1, z2, z3, z4, z5, z6, z7, z8, z9, z10, z11, z12, z13;
+
+void recursive_func(uintptr_t parent_frame_address) {
+#if defined(SMALL_FRAME)
+  char *buf = 0;
+#elif defined(SAVE_ALL_THE_REGISTERS)
+  char *buf = 0;
+  int t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13;
+  t0 = z0;
+  t1 = z1;
+  t2 = z2;
+  t3 = z3;
+  t4 = z4;
+  t5 = z5;
+  t6 = z6;
+  t7 = z7;
+  t8 = z8;
+  t9 = z9;
+  t10 = z10;
+  t11 = z11;
+  t12 = z12;
+  t13 = z13;
+
+  z0 = t0;
+  z1 = t1;
+  z2 = t2;
+  z3 = t3;
+  z4 = t4;
+  z5 = t5;
+  z6 = t6;
+  z7 = t7;
+  z8 = t8;
+  z9 = t9;
+  z10 = t10;
+  z11 = t11;
+  z12 = t12;
+  z13 = t13;
+#else
+  char buf[BS];
+  // Check that the stack grows in the righ direction, unless we use fake stack.
+  assert(parent_frame_address > (uintptr_t)__builtin_frame_address(0));
+  buf[rand() % BS] = 1;
+  buf[rand() % BS] = 2;
+  x = buf[rand() % BS];
+#endif
+  if (y)
+    recursive_func((uintptr_t)__builtin_frame_address(0));
+  x = 1; // prevent tail call optimization
+  // CHECK: {{stack-overflow on address 0x.* \(pc 0x.* bp 0x.* sp 0x.* T.*\)}}
+  // If stack overflow happens during function prologue, stack trace may be
+  // corrupted. Unwind tables are not always 100% exact there.
+  // For this reason, we don't do any further checks.
+}
+
+void *ThreadFn(void* unused) {
+  recursive_func((uintptr_t)__builtin_frame_address(0));
+  return 0;
+}
+
+void LimitStackAndReexec(int argc, char **argv) {
+  struct rlimit rlim;
+  int res = getrlimit(RLIMIT_STACK, &rlim);
+  assert(res == 0);
+  if (rlim.rlim_cur == RLIM_INFINITY) {
+    rlim.rlim_cur = 256 * 1024;
+    res = setrlimit(RLIMIT_STACK, &rlim);
+    assert(res == 0);
+
+    execv(argv[0], argv);
+    assert(0 && "unreachable");
+  }
+}
+
+int main(int argc, char **argv) {
+  LimitStackAndReexec(argc, argv);
+#ifdef THREAD
+  pthread_t t;
+  pthread_create(&t, 0, ThreadFn, 0);
+  pthread_join(t, 0);
+#else
+  recursive_func((uintptr_t)__builtin_frame_address(0));
+#endif
+  return 0;
+}
+
+
+```
+
+
+---
+
+# 55
+### compiler : `LLVM`
+### title : [clang/c++/coroutines] `-Wunused-parameter` not working with coroutines.
+### open_at : `2023-09-11T16:03:15Z`
+### link : https://github.com/llvm/llvm-project/issues/65971
+### status : `open`
+### tags : `clang:diagnostics, coroutines, `
+### content : 
+Given some coroutine return type `task<T>`, the following:
+```cpp
+task<int> foo( int a ) {
+  co_return 42;
+}
+```
+when compiled with `-Wunused-parameter`, will not warn that `a` is unused.  I suspect that it is because `a` is used during setup of the coroutine frame/promise... but I think most users would not expect that to count as "used."
+
+**Actual behavior**: no warning.
+**Expected behavior**: `warning: unused parameter 'a' [-Wunused-parameter]` (when that warning is enabled)
+
+Note that GCC _does_ warn in this scenario.  In my coroutine-heavy code base I am thus forced to compile with GCC to find all of my unused parameters.`
+
+
+---
+
+# 56
+### compiler : `LLVM`
+### title : `[AArch64] neon big endian miscompiled `
+### open_at : `2023-09-10T10:02:14Z`
+### link : https://github.com/llvm/llvm-project/issues/65884
+### status : `open`
+### tags : `backend:AArch64, miscompilation, `
+### content : 
+https://godbolt.org/z/vWMz5K34r
+
+```
+#include <arm_neon.h>
+
+extern void abort (void);
+
+__attribute__((noinline)) uint8x16_t
+wrap_vld1q_lane_u8 (const uint8_t *load, uint8x16_t vec) {
+  return vld1q_lane_u8 (load, vec, 12);
+}
+
+int test_vld1q_lane_u8(const uint8_t *data) {
+  uint8_t out[16];
+  uint8_t overwrite = 7;
+  int j;
+  uint8x16_t in = vld1q_u8 (data);
+  in = wrap_vld1q_lane_u8 (&overwrite, in);
+  vst1q_u8 (out, in);
+  for (j = 0; j < 13; j++)
+    if (out[j] != (j == 12 ? overwrite : data[j])) {
+      abort();
+    }
+  return 0;
+}
+
+int main (int argc, char **argv)
+{
+  uint64_t orig_data[2] = {0x1234567890abcdefULL, 0x13579bdf02468aceULL};
+  test_vld1q_lane_u8((const uint8_t *)orig_data);
+  return 0;
+}
+```
+
+this code fail, when `-O3 -fno-inline`.
+
+I see the https://llvm.org/docs/BigEndianNEON.html , but I still confuse about the asm:
+
+```
+        rev64   v0.16b, v0.16b
+        ext     v0.16b, v0.16b, v0.16b, #8
+        rev64   v0.16b, v0.16b
+        ext     v0.16b, v0.16b, v0.16b, #8
+```
+
+this code seem do nothing, but appear many times. 
+
+Can anyone give me some clue about this fail? Or just narrow this problem?
+
+I opt bisect it, it's fail in `SLPVectorizerPass`, but I guess it just introduced this problem, but not the main point. 
+
+
+---
+
+# 57
+### compiler : `LLVM`
+### title : `Incorrect value of requires expression involving discarded value`
+### open_at : `2023-09-09T10:13:35Z`
+### link : https://github.com/llvm/llvm-project/issues/65846
+### status : `open`
+### tags : `clang:frontend, concepts, `
+### content : 
+https://godbolt.org/z/63bf61Esd
+
+```cpp
+template <typename T>
+bool foo(T x) {
+    (int(*)[((void)x, 1)])nullptr; // valid
+
+    return requires {
+            (int(*)[((void)x, 1)])nullptr; // clangs returns false
+    };
+}
+bool b = foo(0);
+```
+
+When foo a function, `b` is true, if it's a template, `b` becomes false.
+
+replacing `((void)x, 1)` by `1` makes `b` true. but `(void)b` is a discarded value expression so `((void)x, 1)` is a valid constant.
+clang is also happy with that expression outside of requires expressions, included in constant evaluated and unevaluated context
+
+
+
+---
+
+# 58
+### compiler : `LLVM`
+### title : `Failure to match alias template against template template parameter`
+### open_at : `2023-09-09T07:49:51Z`
+### link : https://github.com/llvm/llvm-project/issues/65843
+### status : `open`
+### tags : `c++, clang:frontend, rejects-valid, `
+### content : 
+```c++
+template<template<class T> class> struct A {};
+template<class T> struct Q {};
+template<class T> using R = Q<T>;
+int f(A<R>);
+int g(A<Q> a) { return f(a); }
+```
+GCC accepts (since 4.9.0), Clang rejects with:
+```console
+<source>:5:24: error: no matching function for call to 'f'
+int g(A<Q> a) { return f(a); }
+                       ^
+<source>:4:5: note: candidate function not viable: no known conversion from 'A<template Q>' to 'A<template R>' for 1st argument
+int f(A<R>);
+    ^
+```
+`-frelaxed-template-template-args` doesn't seem to help in any recent major.
+
+
+---
+
+# 59
+### compiler : `LLVM`
+### title : `clang: concept checking bug in out-of-line definitions of inner class member functions`
+### open_at : `2023-09-08T21:23:16Z`
+### link : https://github.com/llvm/llvm-project/issues/65810
+### status : `closed`
+### tags : `c++20, clang:frontend, concepts, `
+### content : 
+This code:
+
+```cpp
+template<typename Param>
+concept TrivialConcept =
+  requires(Param param) {
+    (void)param;
+  };
+
+template <typename T>
+struct Base {
+    class InnerClass;
+};
+
+template <typename T>
+class Base<T>::InnerClass {
+    template <typename Param>
+    requires TrivialConcept<Param> 
+    int func(Param param) const;
+};
+
+template <typename T>
+template <typename Param>
+requires TrivialConcept<Param>
+int Base<T>::InnerClass::func(Param param) const {
+    return 0;
+}
+```
+
+Works on clang-16 and gcc trunk, fails on clang trunk. I believe it should be allowed per C++20 and above.
+
+Bisecting points to 6db007a0654e as the likely culprit (this got reverted a couple of times previously for similar issues; this one slipped past).
+
+Tagging a few interested people from the diff and from #63782, which points to the same commit:
+@alexander-shaposhnikov @erichkeane @shafik 
+
+
+---
+
+# 60
+### compiler : `LLVM`
+### title : `Clang cannot use _Atomic qualified integer type as controlling expression in switch statement`
+### open_at : `2023-09-07T00:54:59Z`
+### link : https://github.com/llvm/llvm-project/issues/65557
+### status : `closed`
+### tags : `c, clang:frontend, confirmed, `
+### content : 
+Clang cannot use _Atomic qualified integer type as controlling expression in switch statement.
+Minimal example program that will fail to compile:
+```c
+#include <stdatomic.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    _Atomic int x = 0;
+    switch(x) {
+        default:
+            break;
+    }
+    return EXIT_SUCCESS;
+}
+```
+Building with Clang 16.0.6 results in build error with following message:
+```
+main.c:7:5: error: statement requires expression of integer type ('_Atomic(int)' invalid)
+    switch(x) {
+    ^      ~
+```
+
+
+---
+
+# 61
+### compiler : `LLVM`
+### title : `Assumptions not working with complex conditionals`
+### open_at : `2023-09-06T17:21:01Z`
+### link : https://github.com/llvm/llvm-project/issues/65504
+### status : `open`
+### tags : `llvm:optimizations, missed-optimization, `
+### content : 
+https://godbolt.org/z/h14s5TGc5 is an example where a `__builtin_assume` containing an `||` conditional isn't working as expected. I wanted to assert that a value was in a particular range, and the expectation was that the `__builtin_assume` would result in the cases for 21 and 28 being optimized out. Removing the `||`, as in https://godbolt.org/z/ja5xsxoMo, does work as expected. See https://discourse.llvm.org/t/builtin-assume-with-complex-condition-not-working/73267 for more discussion.`
+
+```cpp
+int systemGetVer() __attribute__((pure));
+int getVer() {
+    int i = systemGetVer();
+    __builtin_assume(i == -1 || i >= 29);
+    return i;
+}
+
+void foo(int);
+void baz() {
+    switch (getVer()) {
+    case -1:
+        foo(100);
+        break;
+    case 21:
+        foo(121);
+        break;
+    case 28:
+        foo(128);
+        break;
+    case 29:
+        foo(129);
+        break;
+    case 31:
+        foo(131);
+        break;
+    }
+}
+```
+
+---
+
+# 62
+### compiler : `LLVM`
+### title : `Possible incorrect code generation when using variable templates`
+### open_at : `2023-01-30T01:50:28Z`
+### link : https://github.com/llvm/llvm-project/issues/60373
+### status : `open`
+### tags : `clang:frontend, miscompilation, `
+### content : 
+Hello,
+
+I'm encountering an issue with member variables not being initialised properly after moving from GCC to Clang. I managed to boil it down to the following minimal example:
+
+```cpp
+template <typename T>
+struct A{
+    int x = 10;
+};
+
+template <typename T>
+struct B{
+    A<T> a;
+};
+
+template <typename T>
+A<T> a;
+
+template <typename T>
+auto aa = a<T>;
+
+template <typename T>
+B<T> b = {
+    aa<T>
+};
+
+int main(){
+    return b<float>.a.x;
+}
+```
+
+[Same example on the compiler explorer](https://godbolt.org/z/5aG8TWzTx)
+
+I'm expecting it to return `10` (which GCC does) but Clang returns `0`
+
+Best regards!
+Jonas`
+
+
+---
+
+# 63
+### compiler : `LLVM`
+### title : `Missed function specialization (Clang vs GCC)`
+### open_at : `2023-01-29T19:09:27Z`
+### link : https://github.com/llvm/llvm-project/issues/60368
+### status : `open`
+### tags : `llvm:optimizations, missed-optimization, `
+### content : 
+```c
+int __attribute__ ((noinline))
+foo (int arg)
+{
+  return 2 * arg;
+}
+
+int
+bar (int arg)
+{
+  return foo (5);
+}
+
+```
+
+Since Func Specialization pass was enabled, I would expect GCC-like codegen:
+```asm
+foo.constprop.0:
+        mov     eax, 10
+        ret
+foo:
+        lea     eax, [rdi+rdi]
+        ret
+bar:
+        jmp     foo.constprop.0 // or just  mov     eax, 10
+```
+
+Current codegen:
+```asm
+foo:                                    # @foo
+        lea     eax, [rdi + rdi]
+        ret
+bar:                                    # @bar
+        mov     edi, 5
+        jmp     foo                             # TAILCALL
+```
+
+https://godbolt.org/z/Yod4rfhvs
+
+
+---
+
+# 64
+### compiler : `LLVM`
+### title : `if-conversion creating dead references to removed MachineBasicBlocks in INLINEASM_BR`
+### open_at : `2023-01-28T00:27:13Z`
+### link : https://github.com/llvm/llvm-project/issues/60346
+### status : `closed`
+### tags : `llvm:codegen, regression, release:backport, invalid-code-generation, release:merged, `
+### content : 
+via @arndb :
+```c
+_Bool arch_static_branch_branch;
+
+inline _Bool arch_static_branch() {
+  asm goto(".word b, %l[l_yes], %c0\n\t"
+           :
+           : "i"(&arch_static_branch_branch)
+           :
+           : l_yes);
+  return 0;
+l_yes:
+  return 1;
+}
+
+void __dynamic_dev_dbg(char *, ...);
+static void tusb1210_chg_det_set_type(int type) {
+  if (arch_static_branch())
+    __dynamic_dev_dbg("", type);
+}
+
+void tusb1210_chg_det_work(char v) {
+  if (v)
+    tusb1210_chg_det_set_type(1);
+  else
+    tusb1210_chg_det_set_type(0);
+}
+```
+`-O2 --target=arm-linux-gnueabi` produces an invalid `.long   ".LBB0_-1"` where before it would produce `.long   .Ltmp2`.
+
+Bisection converged on https://reviews.llvm.org/D130316.
+
+This specific test case seems specific to the arm backend; x86 and aarch64 don't repro.  Will dig more next week.
+
+cc @nikic @bwendling @efriedma-quic @jyknight 
+
+
+---
+
+# 65
+### compiler : `LLVM`
+### title : `[Clang] [Concepts] Regression between 15.x and trunk: satisfaction of constraint depends on itself`
+### open_at : `2023-01-27T00:46:06Z`
+### link : https://github.com/llvm/llvm-project/issues/60323
+### status : `closed`
+### tags : `clang:frontend, regression, concepts, `
+### content : 
+https://godbolt.org/z/vEb55MGrM is a reproducer that occurs at least in 0d6b26b4d3e3991da16f5b7f53e397b0051e8598 and on current trunk, but did not occur in 7520d187cf0dedcf5085f71bc1a5472c75cc8dbb as far as I can tell.  It would be good to fix this and get it into LLVM 16 before the release.
+
+The bug here seems to be that Clang is looking at the textual form of the requires-clause and deciding that "requires { go(t); } depends on requires { go(t); }"; but the two requires-clauses are in different class scopes, where the word go refers to completely different member functions.
+
+Explicitly specifying which `go` we're referring to by using `this` is a workaround as you can see in https://godbolt.org/z/Gccahddnf
+
+
+---
+
+# 66
+### compiler : `LLVM`
+### title : `machine-cse pass breaks __builtin_setjmp on powerpc`
+### open_at : `2023-01-26T23:37:54Z`
+### link : https://github.com/llvm/llvm-project/issues/60320
+### status : `open`
+### tags : `llvm:optimizations, `
+### content : 
+The following code is simplified from a program in which `__builtin_setjmp` always returns 0 (at optimization level -Og, not all optimization levels tested).
+```cpp
+typedef enum memory_order {
+  memory_order_relaxed = 0,
+  memory_order_consume = 1,
+  memory_order_acquire = 2,
+  memory_order_release = 3,
+  memory_order_acq_rel = 4,
+  memory_order_seq_cst = 5
+} memory_order;
+
+struct G {
+    volatile _Atomic(_Bool) init;
+    void *ctx[5];
+};
+
+extern void first(void), second(void);
+
+void bad_setjmp(struct G *g) {
+
+    __c11_atomic_store(&g->init, 1, memory_order_release);
+
+    if (__builtin_setjmp(g->ctx) == 0) {
+        first();
+    } else {
+        second();
+    }
+}
+```
+
+In the assembly code I find
+```asm
+	bcl 20, 31, .LBB0_5
+	#EH_SjLj_Setup	.LBB0_5
+```
+
+This is wrong.  The correct code, which you get if you change the constant `1` to `0` in the `__c11_atomic_store` call, is
+```asm
+	bcl 20, 31, .LBB0_3
+	li 3, 1
+	#EH_SjLj_Setup	.LBB0_3
+```
+
+The `bcl` instruction saves the address of the following instruction in a register.  A call to `__builtin_longjmp` resumes at that address.  The instruction there should set the return value of `__builtin_setjmp` to 1.  The instruction was moved out of place by the machine-cse pass, which took
+```
+  SYNC 1
+  %1:gprc = LI 1
+  STB killed %1:gprc, 0, %0:g8rc_and_g8rc_nox0 :: (volatile store monotonic (s8) into %ir.g, align 8)
+  ...
+  BCLalways %bb.4, <regmask $zero $zero8>, implicit-def $lr, implicit $rm
+  %8:gprc = LI 1
+  EH_SjLj_Setup %bb.4
+  B %bb.5
+```
+and eliminated the set of `%8` in favor of reusing `%1`:
+```
+  SYNC 1
+  %1:gprc = LI 1
+  STB %1:gprc, 0, %0:g8rc_and_g8rc_nox0 :: (volatile store monotonic (s8) into %ir.g, align 8)
+  ...
+  BCLalways %bb.4, <regmask $zero $zero8>, implicit-def $lr, implicit $rm
+  EH_SjLj_Setup %bb.4
+  B %bb.5
+```
+This transformation is invalid.  The instruction after BCLalways is reachable by __builtin_longjmp and moving the instruction earlier causes it not to execute at the right time.
+
+The instruction description for this particular `bcl` may need to indicate that the instruction overwrites all registers and memory (except SP, FP, BP, and TOC, which revert to their saved values).
+
+An IR file for testing is attached.
+[invoke.txt](https://github.com/llvm/llvm-project/files/10514256/invoke.txt)
+
+
+
+---
+
+# 67
+### compiler : `LLVM`
+### title : `clang c++20: Associated constraints added to a default constructor are excessively checked`
+### open_at : `2023-01-25T16:47:21Z`
+### link : https://github.com/llvm/llvm-project/issues/60293
+### status : `open`
+### tags : `c++20, clang:frontend, `
+### content : 
+In the following code snippet, the declaration of typedef-name `CW` is accepted by msvc and gcc, but rejected by clang. [Godbolt link](https://godbolt.org/z/bGMdTh8qs).
+
+I think clang is probably buggy here. When determining whether `decltype(ConstrainedWrapper<Wrapped>{std::declval<Wrapped>()})` is well-formed, clang seemly excessively requires the associated constraints of the default constructor to be satisfied, even if the default constructor is not selected.
+
+```C++
+#include <concepts>
+#include <cstddef>
+#include <utility>
+
+struct NoDefaultCtor {
+    constexpr explicit NoDefaultCtor(std::nullptr_t) {}
+};
+
+template<class T>
+struct Wrapper {
+    Wrapper() = default;
+    constexpr explicit Wrapper(T x) : val(std::move(x)) {}
+
+    T val{};
+};
+
+template<class T>
+struct ConstrainedWrapper {
+    ConstrainedWrapper() requires std::default_initializable<T> = default;
+
+    constexpr explicit ConstrainedWrapper(T x) : val(std::move(x)) {}
+
+    T val{};
+};
+
+using Wrapped             = Wrapper<NoDefaultCtor>;
+using W [[maybe_unused]]  = decltype(Wrapper<Wrapped>{std::declval<Wrapped>()});
+using CW [[maybe_unused]] = decltype(ConstrainedWrapper<Wrapped>{std::declval<Wrapped>()}); // <- clang is buggy here
+```
+
+
+---
+
+# 68
+### compiler : `LLVM`
+### title : `[clang] Multiple destructor calls emitted with consteval usage in switch statement`
+### open_at : `2023-01-24T07:44:01Z`
+### link : https://github.com/llvm/llvm-project/issues/60249
+### status : `open`
+### tags : `c++20, clang:frontend, needs-reduction, `
+### content : 
+I have the following source (haven't managed to reduce this further with multiple approaches, so sorry this is a bit long, maybe someone can help me?) which seems to generate the wrong assembly:
+
+```c++
+namespace {
+std::shared_ptr<spdlog::logger> qml_logger    = nullptr;
+
+void
+qmlMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    std::string localMsg = msg.toStdString();
+    const char *file     = context.file ? context.file : "";
+    const char *function = context.function ? context.function : "";
+
+    if (
+      msg.endsWith(QStringLiteral("Both point size and pixel size set. Using pixel size.")))
+        return;
+
+    switch (type) {
+    case QtDebugMsg:
+        nhlog::qml()->debug("{} ({}:{}, {})", localMsg, file, context.line, function);
+        break;
+    case QtInfoMsg:
+        nhlog::qml()->info("{} ({}:{}, {})", localMsg, file, context.line, function);
+        break;
+    case QtWarningMsg:
+        nhlog::qml()->warn("{} ({}:{}, {})", localMsg, file, context.line, function);
+        break;
+    case QtCriticalMsg:
+        nhlog::qml()->critical("{} ({}:{}, {})", localMsg, file, context.line, function);
+        break;
+    case QtFatalMsg:
+        nhlog::qml()->critical("{} ({}:{}, {})", localMsg, file, context.line, function);
+        break;
+    }
+}
+}
+
+namespace nhlog {
+std::shared_ptr<spdlog::logger>
+qml()
+{
+    return qml_logger;
+}
+}
+```
+
+Full context: https://github.com/Nheko-Reborn/nheko/blob/8835040db61d039af4bab34e36b1e634bb9d1d1f/src/Logging.cpp
+
+To my understanding, this is legal code and I ran this with undefined sanitizer. It however causes a crash and triggers the address sanitizer:
+
+<details><summary>output</summary>
+<p>
+
+```console
+==29161==ERROR: AddressSanitizer: stack-use-after-scope on address 0x7fd44a03b518 at pc 0x55ec7d083e2e bp 0x7fffc5a7c090 sp 0x7fffc5a7c088
+READ of size 8 at 0x7fd44a03b518 thread T0
+    #0 0x55ec7d083e2d in std::__shared_count<(__gnu_cxx::_Lock_policy)2>::~__shared_count() /usr/lib/gcc/x86_64-pc-linux-gnu/12/include/g++-v12/bits/shared_ptr_base.h:1070:6
+    #1 0x55ec7da9d22c in std::__shared_ptr<spdlog::logger, (__gnu_cxx::_Lock_policy)2>::~__shared_ptr() /usr/lib/gcc/x86_64-pc-linux-gnu/12/include/g++-v12/bits/shared_ptr_base.h:1524:31
+    #2 0x55ec7da80568 in std::shared_ptr<spdlog::logger>::~shared_ptr() /usr/lib/gcc/x86_64-pc-linux-gnu/12/include/g++-v12/bits/shared_ptr.h:175:11
+    #3 0x55ec7f4410f9 in (anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&) /home/nicolas/Dokumente/devel/open-source/nheko/src/Logging.cpp:62:5
+    #4 0x7fd4501a49b7 in qt_message_print /usr/src/debug/dev-qt/qtcore-5.15.8-r1/qtbase-everywhere-src-5.15.8/src/corelib/global/qlogging.cpp:1843:57
+    #5 0x7fd4501a608f in qt_message_output(QtMsgType, QMessageLogContext const&, QString const&) /usr/src/debug/dev-qt/qtcore-5.15.8-r1/qtbase-everywhere-src-5.15.8/src/corelib/global/qlogging.cpp:1924:21
+    #6 0x7fd4502a202f in QDebug::~QDebug() /usr/src/debug/dev-qt/qtcore-5.15.8-r1/qtbase-everywhere-src-5.15.8/src/corelib/io/qdebug.cpp:154:30
+    #7 0x7fd4517ac4cf in dumpwarning /usr/src/debug/dev-qt/qtdeclarative-5.15.8-r2/qtdeclarative-everywhere-src-5.15.8/src/qml/qml/qqmlengine.cpp:2073:55
+    #8 0x7fd4517c2d44 in QQmlComponentPrivate::complete(QQmlEnginePrivate*, QQmlComponentPrivate::ConstructionState*) /usr/src/debug/dev-qt/qtdeclarative-5.15.8-r2/qtdeclarative-everywhere-src-5.15.8/src/qml/qml/qqmlcomponent.cpp:1008:36
+    #9 0x7fd4517c2d44 in QQmlComponentPrivate::complete(QQmlEnginePrivate*, QQmlComponentPrivate::ConstructionState*) /usr/src/debug/dev-qt/qtdeclarative-5.15.8-r2/qtdeclarative-everywhere-src-5.15.8/src/qml/qml/qqmlcomponent.cpp:996:6
+    #10 0x7fd4517c4e2f in QQmlComponentPrivate::completeCreate() /usr/src/debug/dev-qt/qtdeclarative-5.15.8-r2/qtdeclarative-everywhere-src-5.15.8/src/qml/qml/qqmlcomponent.cpp:1092:17
+    #11 0x7fd4517c4fe5 in QQmlComponent::completeCreate() /usr/src/debug/dev-qt/qtdeclarative-5.15.8-r2/qtdeclarative-everywhere-src-5.15.8/src/qml/qml/qqmlcomponent.cpp:1079:22
+    #12 0x7fd4517c4fe5 in QQmlComponent::create(QQmlContext*) /usr/src/debug/dev-qt/qtdeclarative-5.15.8-r2/qtdeclarative-everywhere-src-5.15.8/src/qml/qml/qqmlcomponent.cpp:825:23
+    #13 0x7fd451d24c9b in QQuickView::continueExecute() /usr/src/debug/dev-qt/qtdeclarative-5.15.8-r2/qtdeclarative-everywhere-src-5.15.8/src/quick/items/qquickview.cpp:492:55
+    #14 0x55ec7f491a60 in MainWindow::MainWindow(QWindow*) /home/nicolas/Dokumente/devel/open-source/nheko/src/MainWindow.cpp:93:5
+    #15 0x55ec7f77e6f6 in main /home/nicolas/Dokumente/devel/open-source/nheko/src/main.cpp:341:16
+    #16 0x7fd44f834305 in __libc_start_call_main /usr/src/debug/sys-libs/glibc-2.36-r6/glibc-2.36/csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #17 0x7fd44f8343c7 in __libc_start_main /usr/src/debug/sys-libs/glibc-2.36-r6/glibc-2.36/csu/../csu/libc-start.c:381:3
+    #18 0x55ec7ce3b940 in _start (/home/nicolas/Dokumente/devel/open-source/nheko/build-clang-san/nheko+0x72cf940)
+```
+
+This is with libfmt 9.1.0 and spdlog 1.11.0.
+
+The following assembly is generated for the `qmlMessageHandler` function:
+
+```objdump
+00000000000008a0 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)>:
+{
+ 8a0:	55                   	push   rbp
+ 8a1:	48 89 e5             	mov    rbp,rsp
+ 8a4:	48 81 ec 70 01 00 00 	sub    rsp,0x170
+ 8ab:	64 48 8b 04 25 28 00 00 00 	mov    rax,QWORD PTR fs:0x28
+ 8b4:	48 89 45 f8          	mov    QWORD PTR [rbp-0x8],rax
+ 8b8:	89 bd 64 ff ff ff    	mov    DWORD PTR [rbp-0x9c],edi
+ 8be:	48 89 b5 58 ff ff ff 	mov    QWORD PTR [rbp-0xa8],rsi
+ 8c5:	48 89 95 50 ff ff ff 	mov    QWORD PTR [rbp-0xb0],rdx
+    std::string localMsg = msg.toStdString();
+ 8cc:	48 8b b5 50 ff ff ff 	mov    rsi,QWORD PTR [rbp-0xb0]
+ 8d3:	48 8d 7d d8          	lea    rdi,[rbp-0x28]
+ 8d7:	e8 00 00 00 00       	call   8dc <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x3c>	8d8: R_X86_64_PLT32	QString::toStdString[abi:cxx11]() const-0x4
+    const char *file     = context.file ? context.file : "";
+ 8dc:	48 8b 85 58 ff ff ff 	mov    rax,QWORD PTR [rbp-0xa8]
+ 8e3:	48 83 78 08 00       	cmp    QWORD PTR [rax+0x8],0x0
+ 8e8:	0f 84 17 00 00 00    	je     905 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x65>
+ 8ee:	48 8b 85 58 ff ff ff 	mov    rax,QWORD PTR [rbp-0xa8]
+ 8f5:	48 8b 40 08          	mov    rax,QWORD PTR [rax+0x8]
+ 8f9:	48 89 85 e8 fe ff ff 	mov    QWORD PTR [rbp-0x118],rax
+ 900:	e9 13 00 00 00       	jmp    918 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x78>
+ 905:	48 8d 05 00 00 00 00 	lea    rax,[rip+0x0]        # 90c <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x6c>	908: R_X86_64_PC32	.L.str.15-0x4
+ 90c:	48 89 85 e8 fe ff ff 	mov    QWORD PTR [rbp-0x118],rax
+ 913:	e9 00 00 00 00       	jmp    918 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x78>
+ 918:	48 8b 85 e8 fe ff ff 	mov    rax,QWORD PTR [rbp-0x118]
+ 91f:	48 89 45 d0          	mov    QWORD PTR [rbp-0x30],rax
+    const char *function = context.function ? context.function : "";
+ 923:	48 8b 85 58 ff ff ff 	mov    rax,QWORD PTR [rbp-0xa8]
+ 92a:	48 83 78 10 00       	cmp    QWORD PTR [rax+0x10],0x0
+ 92f:	0f 84 17 00 00 00    	je     94c <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0xac>
+ 935:	48 8b 85 58 ff ff ff 	mov    rax,QWORD PTR [rbp-0xa8]
+ 93c:	48 8b 40 10          	mov    rax,QWORD PTR [rax+0x10]
+ 940:	48 89 85 e0 fe ff ff 	mov    QWORD PTR [rbp-0x120],rax
+ 947:	e9 13 00 00 00       	jmp    95f <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0xbf>
+ 94c:	48 8d 05 00 00 00 00 	lea    rax,[rip+0x0]        # 953 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0xb3>	94f: R_X86_64_PC32	.L.str.15-0x4
+ 953:	48 89 85 e0 fe ff ff 	mov    QWORD PTR [rbp-0x120],rax
+ 95a:	e9 00 00 00 00       	jmp    95f <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0xbf>
+ 95f:	48 8b 85 e0 fe ff ff 	mov    rax,QWORD PTR [rbp-0x120]
+ 966:	48 89 45 c8          	mov    QWORD PTR [rbp-0x38],rax
+      msg.endsWith(QStringLiteral("Both point size and pixel size set. Using pixel size.")))
+ 96a:	48 8b 85 50 ff ff ff 	mov    rax,QWORD PTR [rbp-0xb0]
+ 971:	48 89 85 c8 fe ff ff 	mov    QWORD PTR [rbp-0x138],rax
+ 978:	48 8d 7d c0          	lea    rdi,[rbp-0x40]
+ 97c:	48 89 bd d0 fe ff ff 	mov    QWORD PTR [rbp-0x130],rdi
+ 983:	48 8d 75 b8          	lea    rsi,[rbp-0x48]
+ 987:	e8 54 05 00 00       	call   ee0 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)::$_0::operator()() const>
+ 98c:	48 8b bd c8 fe ff ff 	mov    rdi,QWORD PTR [rbp-0x138]
+ 993:	48 8b b5 d0 fe ff ff 	mov    rsi,QWORD PTR [rbp-0x130]
+ 99a:	ba 01 00 00 00       	mov    edx,0x1
+ 99f:	e8 00 00 00 00       	call   9a4 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x104>	9a0: R_X86_64_PLT32	QString::endsWith(QString const&, Qt::CaseSensitivity) const-0x4
+ 9a4:	88 85 df fe ff ff    	mov    BYTE PTR [rbp-0x121],al
+ 9aa:	e9 00 00 00 00       	jmp    9af <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x10f>
+ 9af:	48 8d 7d c0          	lea    rdi,[rbp-0x40]
+ 9b3:	e8 00 00 00 00       	call   9b8 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x118>	9b4: R_X86_64_PLT32	QString::~QString()-0x4
+ 9b8:	8a 85 df fe ff ff    	mov    al,BYTE PTR [rbp-0x121]
+ 9be:	a8 01                	test   al,0x1
+ 9c0:	0f 85 05 00 00 00    	jne    9cb <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x12b>
+ 9c6:	e9 2f 00 00 00       	jmp    9fa <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x15a>
+ 9cb:	c7 85 40 ff ff ff 01 00 00 00 	mov    DWORD PTR [rbp-0xc0],0x1
+        return;
+ 9d5:	e9 cb 03 00 00       	jmp    da5 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x505>
+ 9da:	48 89 c1             	mov    rcx,rax
+}
+ 9dd:	89 d0                	mov    eax,edx
+ 9df:	48 89 8d 48 ff ff ff 	mov    QWORD PTR [rbp-0xb8],rcx
+ 9e6:	89 85 44 ff ff ff    	mov    DWORD PTR [rbp-0xbc],eax
+      msg.endsWith(QStringLiteral("Both point size and pixel size set. Using pixel size.")))
+ 9ec:	48 8d 7d c0          	lea    rdi,[rbp-0x40]
+ 9f0:	e8 00 00 00 00       	call   9f5 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x155>	9f1: R_X86_64_PLT32	QString::~QString()-0x4
+ 9f5:	e9 d3 03 00 00       	jmp    dcd <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x52d>
+    switch (type) {
+ 9fa:	8b 85 64 ff ff ff    	mov    eax,DWORD PTR [rbp-0x9c]
+ a00:	48 89 85 c0 fe ff ff 	mov    QWORD PTR [rbp-0x140],rax
+ a07:	48 83 e8 04          	sub    rax,0x4
+ a0b:	0f 87 8a 03 00 00    	ja     d9b <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4fb>
+ a11:	48 8b 85 c0 fe ff ff 	mov    rax,QWORD PTR [rbp-0x140]
+ a18:	48 8d 0d 00 00 00 00 	lea    rcx,[rip+0x0]        # a1f <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x17f>	a1b: R_X86_64_PC32	.rodata-0x4
+ a1f:	48 63 04 81          	movsxd rax,DWORD PTR [rcx+rax*4]
+ a23:	48 01 c8             	add    rax,rcx
+ a26:	ff e0                	jmp    rax
+ a28:	48 8d 7d a8          	lea    rdi,[rbp-0x58]
+ a2c:	48 89 bd b8 fe ff ff 	mov    QWORD PTR [rbp-0x148],rdi
+        nhlog::qml()->debug("{} ({}:{}, {})", localMsg, file, context.line, function);
+ a33:	e8 00 00 00 00       	call   a38 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x198>	a34: R_X86_64_PLT32	nhlog::qml()-0x4
+ a38:	48 8b bd b8 fe ff ff 	mov    rdi,QWORD PTR [rbp-0x148]
+ a3f:	e8 00 00 00 00       	call   a44 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x1a4>	a40: R_X86_64_PLT32	std::__shared_ptr_access<spdlog::logger, (__gnu_cxx::_Lock_policy)2, false, false>::operator->() const-0x4
+ a44:	48 89 c7             	mov    rdi,rax
+ a47:	48 8d 05 00 00 00 00 	lea    rax,[rip+0x0]        # a4e <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x1ae>	a4a: R_X86_64_PC32	.L.str.16-0x4
+ a4e:	48 89 85 30 ff ff ff 	mov    QWORD PTR [rbp-0xd0],rax
+ a55:	48 c7 85 38 ff ff ff 0e 00 00 00 	mov    QWORD PTR [rbp-0xc8],0xe
+ a60:	4c 8b 8d 58 ff ff ff 	mov    r9,QWORD PTR [rbp-0xa8]
+ a67:	49 83 c1 04          	add    r9,0x4
+ a6b:	48 8b b5 30 ff ff ff 	mov    rsi,QWORD PTR [rbp-0xd0]
+ a72:	48 8b 95 38 ff ff ff 	mov    rdx,QWORD PTR [rbp-0xc8]
+ a79:	48 89 e0             	mov    rax,rsp
+ a7c:	48 8d 4d c8          	lea    rcx,[rbp-0x38]
+ a80:	48 89 08             	mov    QWORD PTR [rax],rcx
+ a83:	48 8d 4d d8          	lea    rcx,[rbp-0x28]
+ a87:	4c 8d 45 d0          	lea    r8,[rbp-0x30]
+ a8b:	e8 00 00 00 00       	call   a90 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x1f0>	a8c: R_X86_64_PLT32	void spdlog::logger::debug<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&>(fmt::v9::basic_format_string<char, fmt::v9::type_identity<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&>::type, fmt::v9::type_identity<char const*&>::type, fmt::v9::type_identity<int const&>::type, fmt::v9::type_identity<char const*&>::type>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&)-0x4
+ a90:	e9 00 00 00 00       	jmp    a95 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x1f5>
+ a95:	c7 85 40 ff ff ff 02 00 00 00 	mov    DWORD PTR [rbp-0xc0],0x2
+        break;
+ a9f:	e9 db 02 00 00       	jmp    d7f <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4df>
+ aa4:	48 89 c1             	mov    rcx,rax
+}
+ aa7:	89 d0                	mov    eax,edx
+ aa9:	48 89 8d 48 ff ff ff 	mov    QWORD PTR [rbp-0xb8],rcx
+ ab0:	89 85 44 ff ff ff    	mov    DWORD PTR [rbp-0xbc],eax
+ ab6:	e9 d2 02 00 00       	jmp    d8d <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4ed>
+ abb:	48 8d 7d 98          	lea    rdi,[rbp-0x68]
+ abf:	48 89 bd b0 fe ff ff 	mov    QWORD PTR [rbp-0x150],rdi
+        nhlog::qml()->info("{} ({}:{}, {})", localMsg, file, context.line, function);
+ ac6:	e8 00 00 00 00       	call   acb <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x22b>	ac7: R_X86_64_PLT32	nhlog::qml()-0x4
+ acb:	48 8b bd b0 fe ff ff 	mov    rdi,QWORD PTR [rbp-0x150]
+ ad2:	e8 00 00 00 00       	call   ad7 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x237>	ad3: R_X86_64_PLT32	std::__shared_ptr_access<spdlog::logger, (__gnu_cxx::_Lock_policy)2, false, false>::operator->() const-0x4
+ ad7:	48 89 c7             	mov    rdi,rax
+ ada:	48 8d 05 00 00 00 00 	lea    rax,[rip+0x0]        # ae1 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x241>	add: R_X86_64_PC32	.L.str.16-0x4
+ ae1:	48 89 85 20 ff ff ff 	mov    QWORD PTR [rbp-0xe0],rax
+ ae8:	48 c7 85 28 ff ff ff 0e 00 00 00 	mov    QWORD PTR [rbp-0xd8],0xe
+ af3:	4c 8b 8d 58 ff ff ff 	mov    r9,QWORD PTR [rbp-0xa8]
+ afa:	49 83 c1 04          	add    r9,0x4
+ afe:	48 8b b5 20 ff ff ff 	mov    rsi,QWORD PTR [rbp-0xe0]
+ b05:	48 8b 95 28 ff ff ff 	mov    rdx,QWORD PTR [rbp-0xd8]
+ b0c:	48 89 e0             	mov    rax,rsp
+ b0f:	48 8d 4d c8          	lea    rcx,[rbp-0x38]
+ b13:	48 89 08             	mov    QWORD PTR [rax],rcx
+ b16:	48 8d 4d d8          	lea    rcx,[rbp-0x28]
+ b1a:	4c 8d 45 d0          	lea    r8,[rbp-0x30]
+ b1e:	e8 00 00 00 00       	call   b23 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x283>	b1f: R_X86_64_PLT32	void spdlog::logger::info<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&>(fmt::v9::basic_format_string<char, fmt::v9::type_identity<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&>::type, fmt::v9::type_identity<char const*&>::type, fmt::v9::type_identity<int const&>::type, fmt::v9::type_identity<char const*&>::type>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&)-0x4
+ b23:	e9 00 00 00 00       	jmp    b28 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x288>
+ b28:	c7 85 40 ff ff ff 02 00 00 00 	mov    DWORD PTR [rbp-0xc0],0x2
+        break;
+ b32:	e9 2c 02 00 00       	jmp    d63 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4c3>
+ b37:	48 89 c1             	mov    rcx,rax
+}
+ b3a:	89 d0                	mov    eax,edx
+ b3c:	48 89 8d 48 ff ff ff 	mov    QWORD PTR [rbp-0xb8],rcx
+ b43:	89 85 44 ff ff ff    	mov    DWORD PTR [rbp-0xbc],eax
+ b49:	e9 23 02 00 00       	jmp    d71 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4d1>
+ b4e:	48 8d 7d 88          	lea    rdi,[rbp-0x78]
+ b52:	48 89 bd a8 fe ff ff 	mov    QWORD PTR [rbp-0x158],rdi
+        nhlog::qml()->warn("{} ({}:{}, {})", localMsg, file, context.line, function);
+ b59:	e8 00 00 00 00       	call   b5e <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x2be>	b5a: R_X86_64_PLT32	nhlog::qml()-0x4
+ b5e:	48 8b bd a8 fe ff ff 	mov    rdi,QWORD PTR [rbp-0x158]
+ b65:	e8 00 00 00 00       	call   b6a <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x2ca>	b66: R_X86_64_PLT32	std::__shared_ptr_access<spdlog::logger, (__gnu_cxx::_Lock_policy)2, false, false>::operator->() const-0x4
+ b6a:	48 89 c7             	mov    rdi,rax
+ b6d:	48 8d 05 00 00 00 00 	lea    rax,[rip+0x0]        # b74 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x2d4>	b70: R_X86_64_PC32	.L.str.16-0x4
+ b74:	48 89 85 10 ff ff ff 	mov    QWORD PTR [rbp-0xf0],rax
+ b7b:	48 c7 85 18 ff ff ff 0e 00 00 00 	mov    QWORD PTR [rbp-0xe8],0xe
+ b86:	4c 8b 8d 58 ff ff ff 	mov    r9,QWORD PTR [rbp-0xa8]
+ b8d:	49 83 c1 04          	add    r9,0x4
+ b91:	48 8b b5 10 ff ff ff 	mov    rsi,QWORD PTR [rbp-0xf0]
+ b98:	48 8b 95 18 ff ff ff 	mov    rdx,QWORD PTR [rbp-0xe8]
+ b9f:	48 89 e0             	mov    rax,rsp
+ ba2:	48 8d 4d c8          	lea    rcx,[rbp-0x38]
+ ba6:	48 89 08             	mov    QWORD PTR [rax],rcx
+ ba9:	48 8d 4d d8          	lea    rcx,[rbp-0x28]
+ bad:	4c 8d 45 d0          	lea    r8,[rbp-0x30]
+ bb1:	e8 00 00 00 00       	call   bb6 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x316>	bb2: R_X86_64_PLT32	void spdlog::logger::warn<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&>(fmt::v9::basic_format_string<char, fmt::v9::type_identity<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&>::type, fmt::v9::type_identity<char const*&>::type, fmt::v9::type_identity<int const&>::type, fmt::v9::type_identity<char const*&>::type>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&)-0x4
+ bb6:	e9 00 00 00 00       	jmp    bbb <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x31b>
+ bbb:	c7 85 40 ff ff ff 02 00 00 00 	mov    DWORD PTR [rbp-0xc0],0x2
+        break;
+ bc5:	e9 7d 01 00 00       	jmp    d47 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4a7>
+ bca:	48 89 c1             	mov    rcx,rax
+}
+ bcd:	89 d0                	mov    eax,edx
+ bcf:	48 89 8d 48 ff ff ff 	mov    QWORD PTR [rbp-0xb8],rcx
+ bd6:	89 85 44 ff ff ff    	mov    DWORD PTR [rbp-0xbc],eax
+ bdc:	e9 74 01 00 00       	jmp    d55 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4b5>
+ be1:	48 8d bd 78 ff ff ff 	lea    rdi,[rbp-0x88]
+ be8:	48 89 bd a0 fe ff ff 	mov    QWORD PTR [rbp-0x160],rdi
+        nhlog::qml()->critical("{} ({}:{}, {})", localMsg, file, context.line, function);
+ bef:	e8 00 00 00 00       	call   bf4 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x354>	bf0: R_X86_64_PLT32	nhlog::qml()-0x4
+ bf4:	48 8b bd a0 fe ff ff 	mov    rdi,QWORD PTR [rbp-0x160]
+ bfb:	e8 00 00 00 00       	call   c00 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x360>	bfc: R_X86_64_PLT32	std::__shared_ptr_access<spdlog::logger, (__gnu_cxx::_Lock_policy)2, false, false>::operator->() const-0x4
+ c00:	48 89 c7             	mov    rdi,rax
+ c03:	48 8d 05 00 00 00 00 	lea    rax,[rip+0x0]        # c0a <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x36a>	c06: R_X86_64_PC32	.L.str.16-0x4
+ c0a:	48 89 85 00 ff ff ff 	mov    QWORD PTR [rbp-0x100],rax
+ c11:	48 c7 85 08 ff ff ff 0e 00 00 00 	mov    QWORD PTR [rbp-0xf8],0xe
+ c1c:	4c 8b 8d 58 ff ff ff 	mov    r9,QWORD PTR [rbp-0xa8]
+ c23:	49 83 c1 04          	add    r9,0x4
+ c27:	48 8b b5 00 ff ff ff 	mov    rsi,QWORD PTR [rbp-0x100]
+ c2e:	48 8b 95 08 ff ff ff 	mov    rdx,QWORD PTR [rbp-0xf8]
+ c35:	48 89 e0             	mov    rax,rsp
+ c38:	48 8d 4d c8          	lea    rcx,[rbp-0x38]
+ c3c:	48 89 08             	mov    QWORD PTR [rax],rcx
+ c3f:	48 8d 4d d8          	lea    rcx,[rbp-0x28]
+ c43:	4c 8d 45 d0          	lea    r8,[rbp-0x30]
+ c47:	e8 00 00 00 00       	call   c4c <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x3ac>	c48: R_X86_64_PLT32	void spdlog::logger::critical<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&>(fmt::v9::basic_format_string<char, fmt::v9::type_identity<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&>::type, fmt::v9::type_identity<char const*&>::type, fmt::v9::type_identity<int const&>::type, fmt::v9::type_identity<char const*&>::type>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&)-0x4
+ c4c:	e9 00 00 00 00       	jmp    c51 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x3b1>
+ c51:	c7 85 40 ff ff ff 02 00 00 00 	mov    DWORD PTR [rbp-0xc0],0x2
+        break;
+ c5b:	e9 c5 00 00 00       	jmp    d25 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x485>
+ c60:	48 89 c1             	mov    rcx,rax
+}
+ c63:	89 d0                	mov    eax,edx
+ c65:	48 89 8d 48 ff ff ff 	mov    QWORD PTR [rbp-0xb8],rcx
+ c6c:	89 85 44 ff ff ff    	mov    DWORD PTR [rbp-0xbc],eax
+ c72:	e9 bf 00 00 00       	jmp    d36 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x496>
+ c77:	48 8d bd 68 ff ff ff 	lea    rdi,[rbp-0x98]
+ c7e:	48 89 bd 98 fe ff ff 	mov    QWORD PTR [rbp-0x168],rdi
+        nhlog::qml()->critical("{} ({}:{}, {})", localMsg, file, context.line, function);
+ c85:	e8 00 00 00 00       	call   c8a <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x3ea>	c86: R_X86_64_PLT32	nhlog::qml()-0x4
+ c8a:	48 8b bd 98 fe ff ff 	mov    rdi,QWORD PTR [rbp-0x168]
+ c91:	e8 00 00 00 00       	call   c96 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x3f6>	c92: R_X86_64_PLT32	std::__shared_ptr_access<spdlog::logger, (__gnu_cxx::_Lock_policy)2, false, false>::operator->() const-0x4
+ c96:	48 89 c7             	mov    rdi,rax
+ c99:	48 8d 05 00 00 00 00 	lea    rax,[rip+0x0]        # ca0 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x400>	c9c: R_X86_64_PC32	.L.str.16-0x4
+ ca0:	48 89 85 f0 fe ff ff 	mov    QWORD PTR [rbp-0x110],rax
+ ca7:	48 c7 85 f8 fe ff ff 0e 00 00 00 	mov    QWORD PTR [rbp-0x108],0xe
+ cb2:	4c 8b 8d 58 ff ff ff 	mov    r9,QWORD PTR [rbp-0xa8]
+ cb9:	49 83 c1 04          	add    r9,0x4
+ cbd:	48 8b b5 f0 fe ff ff 	mov    rsi,QWORD PTR [rbp-0x110]
+ cc4:	48 8b 95 f8 fe ff ff 	mov    rdx,QWORD PTR [rbp-0x108]
+ ccb:	48 89 e0             	mov    rax,rsp
+ cce:	48 8d 4d c8          	lea    rcx,[rbp-0x38]
+ cd2:	48 89 08             	mov    QWORD PTR [rax],rcx
+ cd5:	48 8d 4d d8          	lea    rcx,[rbp-0x28]
+ cd9:	4c 8d 45 d0          	lea    r8,[rbp-0x30]
+ cdd:	e8 00 00 00 00       	call   ce2 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x442>	cde: R_X86_64_PLT32	void spdlog::logger::critical<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&>(fmt::v9::basic_format_string<char, fmt::v9::type_identity<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&>::type, fmt::v9::type_identity<char const*&>::type, fmt::v9::type_identity<int const&>::type, fmt::v9::type_identity<char const*&>::type>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, char const*&, int const&, char const*&)-0x4
+ ce2:	e9 00 00 00 00       	jmp    ce7 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x447>
+ ce7:	c7 85 40 ff ff ff 02 00 00 00 	mov    DWORD PTR [rbp-0xc0],0x2
+    }
+ cf1:	48 8d bd 68 ff ff ff 	lea    rdi,[rbp-0x98]
+ cf8:	e8 00 00 00 00       	call   cfd <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x45d>	cf9: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ cfd:	e9 23 00 00 00       	jmp    d25 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x485>
+ d02:	48 89 c1             	mov    rcx,rax
+}
+ d05:	89 d0                	mov    eax,edx
+ d07:	48 89 8d 48 ff ff ff 	mov    QWORD PTR [rbp-0xb8],rcx
+ d0e:	89 85 44 ff ff ff    	mov    DWORD PTR [rbp-0xbc],eax
+    }
+ d14:	48 8d bd 68 ff ff ff 	lea    rdi,[rbp-0x98]
+ d1b:	e8 00 00 00 00       	call   d20 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x480>	d1c: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d20:	e9 11 00 00 00       	jmp    d36 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x496>
+ d25:	48 8d bd 78 ff ff ff 	lea    rdi,[rbp-0x88]
+ d2c:	e8 00 00 00 00       	call   d31 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x491>	d2d: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d31:	e9 11 00 00 00       	jmp    d47 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4a7>
+ d36:	48 8d bd 78 ff ff ff 	lea    rdi,[rbp-0x88]
+ d3d:	e8 00 00 00 00       	call   d42 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4a2>	d3e: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d42:	e9 0e 00 00 00       	jmp    d55 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4b5>
+ d47:	48 8d 7d 88          	lea    rdi,[rbp-0x78]
+ d4b:	e8 00 00 00 00       	call   d50 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4b0>	d4c: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d50:	e9 0e 00 00 00       	jmp    d63 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4c3>
+ d55:	48 8d 7d 88          	lea    rdi,[rbp-0x78]
+ d59:	e8 00 00 00 00       	call   d5e <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4be>	d5a: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d5e:	e9 0e 00 00 00       	jmp    d71 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4d1>
+ d63:	48 8d 7d 98          	lea    rdi,[rbp-0x68]
+ d67:	e8 00 00 00 00       	call   d6c <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4cc>	d68: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d6c:	e9 0e 00 00 00       	jmp    d7f <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4df>
+ d71:	48 8d 7d 98          	lea    rdi,[rbp-0x68]
+ d75:	e8 00 00 00 00       	call   d7a <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4da>	d76: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d7a:	e9 0e 00 00 00       	jmp    d8d <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4ed>
+ d7f:	48 8d 7d a8          	lea    rdi,[rbp-0x58]
+ d83:	e8 00 00 00 00       	call   d88 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4e8>	d84: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d88:	e9 0e 00 00 00       	jmp    d9b <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4fb>
+ d8d:	48 8d 7d a8          	lea    rdi,[rbp-0x58]
+ d91:	e8 00 00 00 00       	call   d96 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x4f6>	d92: R_X86_64_PLT32	std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+ d96:	e9 32 00 00 00       	jmp    dcd <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x52d>
+}
+ d9b:	c7 85 40 ff ff ff 00 00 00 00 	mov    DWORD PTR [rbp-0xc0],0x0
+ da5:	48 8d 7d d8          	lea    rdi,[rbp-0x28]
+ da9:	e8 00 00 00 00       	call   dae <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x50e>	daa: R_X86_64_PLT32	std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string()-0x4
+ dae:	64 48 8b 04 25 28 00 00 00 	mov    rax,QWORD PTR fs:0x28
+ db7:	48 8b 4d f8          	mov    rcx,QWORD PTR [rbp-0x8]
+ dbb:	48 39 c8             	cmp    rax,rcx
+ dbe:	0f 85 1e 00 00 00    	jne    de2 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x542>
+ dc4:	48 81 c4 70 01 00 00 	add    rsp,0x170
+ dcb:	5d                   	pop    rbp
+ dcc:	c3                   	ret
+ dcd:	48 8d 7d d8          	lea    rdi,[rbp-0x28]
+ dd1:	e8 00 00 00 00       	call   dd6 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x536>	dd2: R_X86_64_PLT32	std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string()-0x4
+ dd6:	48 8b bd 48 ff ff ff 	mov    rdi,QWORD PTR [rbp-0xb8]
+ ddd:	e8 00 00 00 00       	call   de2 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x542>	dde: R_X86_64_PLT32	_Unwind_Resume-0x4
+ de2:	e8 00 00 00 00       	call   de7 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x547>	de3: R_X86_64_PLT32	__stack_chk_fail-0x4
+ de7:	66 0f 1f 84 00 00 00 00 00 	nop    WORD PTR [rax+rax*1+0x0]
+```
+
+To me this looks like multiple destructor calls are generated for the temporary `shared_ptr`. You can "fix" that by getting rid of the `qml()` call and accessing the `shared_ptr` directly or by putting the logging calls inside a scope. From my understanding, this happens because of the `consteval` constructor for the libfmt arguments. Without the libfmt calls, the destructors seem to happen in the normal places. Specifically that part of the assembly then looks like this:
+
+```objdump
+    switch (type) {
+ 975:   8b 85 74 ff ff ff       mov    eax,DWORD PTR [rbp-0x8c]
+ 97b:   48 89 85 30 ff ff ff    mov    QWORD PTR [rbp-0xd0],rax
+ 982:   48 83 e8 04             sub    rax,0x4
+ 986:   0f 87 8b 00 00 00       ja     a17 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x177>
+ 98c:   48 8b 85 30 ff ff ff    mov    rax,QWORD PTR [rbp-0xd0]
+ 993:   48 8d 0d 00 00 00 00    lea    rcx,[rip+0x0]        # 99a <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0xfa> 996: R_X86_64_PC32      .rodata-0x4
+ 99a:   48 63 04 81             movsxd rax,DWORD PTR [rcx+rax*4]
+ 99e:   48 01 c8                add    rax,rcx
+ 9a1:   ff e0                   jmp    rax
+        nhlog::qml();
+ 9a3:   48 8d 7d b8             lea    rdi,[rbp-0x48]
+ 9a7:   e8 00 00 00 00          call   9ac <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x10c>       9a8: R_X86_64_PLT32     nhlog::qml()-0x4
+ 9ac:   48 8d 7d b8             lea    rdi,[rbp-0x48]
+ 9b0:   e8 00 00 00 00          call   9b5 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x115>       9b1: R_X86_64_PLT32     std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+        break;
+ 9b5:   e9 5d 00 00 00          jmp    a17 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x177>
+        nhlog::qml();
+ 9ba:   48 8d 7d a8             lea    rdi,[rbp-0x58]
+ 9be:   e8 00 00 00 00          call   9c3 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x123>       9bf: R_X86_64_PLT32     nhlog::qml()-0x4
+ 9c3:   48 8d 7d a8             lea    rdi,[rbp-0x58]
+ 9c7:   e8 00 00 00 00          call   9cc <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x12c>       9c8: R_X86_64_PLT32     std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+        break;
+ 9cc:   e9 46 00 00 00          jmp    a17 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x177>
+        nhlog::qml();
+ 9d1:   48 8d 7d 98             lea    rdi,[rbp-0x68]
+ 9d5:   e8 00 00 00 00          call   9da <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x13a>       9d6: R_X86_64_PLT32     nhlog::qml()-0x4
+ 9da:   48 8d 7d 98             lea    rdi,[rbp-0x68]
+ 9de:   e8 00 00 00 00          call   9e3 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x143>       9df: R_X86_64_PLT32     std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+        break;
+ 9e3:   e9 2f 00 00 00          jmp    a17 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x177>
+        nhlog::qml();
+ 9e8:   48 8d 7d 88             lea    rdi,[rbp-0x78]
+ 9ec:   e8 00 00 00 00          call   9f1 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x151>       9ed: R_X86_64_PLT32     nhlog::qml()-0x4
+ 9f1:   48 8d 7d 88             lea    rdi,[rbp-0x78]
+ 9f5:   e8 00 00 00 00          call   9fa <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x15a>       9f6: R_X86_64_PLT32     std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+        break;
+ 9fa:   e9 18 00 00 00          jmp    a17 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x177>
+        nhlog::qml();
+ 9ff:   48 8d bd 78 ff ff ff    lea    rdi,[rbp-0x88]
+ a06:   e8 00 00 00 00          call   a0b <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x16b>       a07: R_X86_64_PLT32     nhlog::qml()-0x4
+ a0b:   48 8d bd 78 ff ff ff    lea    rdi,[rbp-0x88]
+ a12:   e8 00 00 00 00          call   a17 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x177>       a13: R_X86_64_PLT32     std::shared_ptr<spdlog::logger>::~shared_ptr()-0x4
+}
+ a17:   c7 85 50 ff ff ff 00 00 00 00   mov    DWORD PTR [rbp-0xb0],0x0
+ a21:   48 8d 7d d8             lea    rdi,[rbp-0x28]
+ a25:   e8 00 00 00 00          call   a2a <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x18a>       a26: R_X86_64_PLT32     std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string()-0x4
+ a2a:   64 48 8b 04 25 28 00 00 00      mov    rax,QWORD PTR fs:0x28
+ a33:   48 8b 4d f8             mov    rcx,QWORD PTR [rbp-0x8]
+ a37:   48 39 c8                cmp    rax,rcx
+ a3a:   0f 85 15 00 00 00       jne    a55 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x1b5>
+ a40:   48 81 c4 d0 00 00 00    add    rsp,0xd0
+ a47:   5d                      pop    rbp
+ a48:   c3                      ret
+ a49:   48 8b bd 58 ff ff ff    mov    rdi,QWORD PTR [rbp-0xa8]
+ a50:   e8 00 00 00 00          call   a55 <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x1b5>       a51: R_X86_64_PLT32     _Unwind_Resume-0x4
+ a55:   e8 00 00 00 00          call   a5a <(anonymous namespace)::qmlMessageHandler(QtMsgType, QMessageLogContext const&, QString const&)+0x1ba>       a56: R_X86_64_PLT32     __stack_chk_fail-0x4
+ a5a:   66 0f 1f 44 00 00       nop    WORD PTR [rax+rax*1+0x0]
+ ```
+
+</p>
+</details>
+
+Here is the [Preprocessed source file](https://github.com/llvm/llvm-project/files/10487282/Logging.cpp.txt).
+
+Sorry this is a bit long. If you have any suggestions on how I could simplify this report, I will try that. We are now using this workaround: https://github.com/Nheko-Reborn/nheko/commit/4c34f4bfee284f0065f4b72c5a12649d664acf43 Original issue: https://github.com/Nheko-Reborn/nheko/issues/1292
+
+There is a good chance I am triggering undefined behaviour, however GCC compiles it fine without warnings and I don't see any sanitizer warnings about it apart from the obvious crash from the bad code. I apologize if this is actually an issue with our code.
+
+I tested this in Clang 15.0.7 and 14.0.6 from the Gentoo repos, haven't had a change to test 16 yet. This is with libstdc++, not libc++.
+
+
+---
+
+# 69
+### compiler : `LLVM`
+### title : comparison with short (< 16 chars) local `const std::string` is slower when it is `static`
+### open_at : `2023-01-20T13:23:42Z`
+### link : https://github.com/llvm/llvm-project/issues/60165
+### status : `open`
+### tags : `llvm:optimizations, `
+### content : 
+Split from #58002.
+
+```cpp
+#include <string>
+
+#define LITERAL_S "012345678901234"
+#define LITERAL_L "0123456789012345"
+
+bool cmp3_s(const std::string& s)
+{
+    const std::string s_s(LITERAL_S);
+    return s == s_s;
+}
+
+bool cmp4_s(const std::string& s)
+{
+    static const std::string s_s(LITERAL_S);
+    return s == s_s;
+}
+
+bool cmp3_l(const std::string& s)
+{
+    const std::string s_s(LITERAL_L);
+    return s == s_s;
+}
+
+bool cmp4_l(const std::string& s)
+{
+    static const std::string s_s(LITERAL_L);
+    return s == s_s;
+}
+```
+https://quick-bench.com/q/A3FPfNV6Cds2TwwBvSRwT6klxLg
+
+This applies to all strings with less than 16 characters.
+
+This does not happen with GCC where `static` is always faster no matter the length: 
+https://quick-bench.com/q/hPor-y8JDwcMBEnT_oOv79nF43g
+https://quick-bench.com/q/4Ef2dOfaBuhCd0QkKBRVVCXamjI`
+
+
+---
+
+
+# 70
+### compiler : `LLVM`
+### title : `Terminate handler generated for noexcept method using try/catch(...)`
+### open_at : `2023-01-19T05:16:36Z`
+### link : https://github.com/llvm/llvm-project/issues/60139
+### status : `open`
+### tags : `enhancement, llvm:optimizations, missed-optimization, `
+### content : 
+```c++
+void mayThrow();
+
+void bar() noexcept {
+    try {
+        mayThrow();
+    } catch (...) {}
+}
+```
+
+`bar()` 함수는 내부에서 예외가 발생할 수 있는 `mayThrow()` 함수를 호출합니다. 만약 예외가 발생하면, 그것을 잡아서 아무것도 하지 않고 넘어가려고 합니다. 그런데 Clang를 사용해서 이 코드를 컴파일하면, 예외가 발생했을 때 프로그램이 종료되는 부가적인 코드가 생성됩니다. 이것은 원치 않는 동작이며 불필요한 코드가 추가된 것입니다.
+
+This code generates a call to `__clang_call_terminate` which seems like unnecessary code bloat (https://godbolt.org/z/eKbGq9xjP) 
+The same code with GCC doesn't generate the call to terminate (https://godbolt.org/z/bT1vMa7a3)
+
+According to cppreference, `catch(...)` should guarantee that no exception escapes the function so this `__clang_call_terminate` code section shouldn't be required.
+
+https://en.cppreference.com/w/cpp/language/try_catch
+
+> Catch-all block may be used to ensure that no uncaught exceptions can possibly escape from a function that offers nothrow exception guarantee.
+
+
+
+---
+
+# 71
+### compiler : `LLVM`
+### title : `[clang] Miscompiled atomic ordering at -O1 (clang-14 onwards)`
+### open_at : `2023-01-18T22:15:49Z`
+### link : https://github.com/llvm/llvm-project/issues/60131
+### status : `closed`
+### tags : `miscompilation, llvm:optimizations, `
+### content : 
+Hi LLVM,
+
+please have a look at the following code:
+
+``` cpp
+#include <utility>
+#include <atomic>
+#include <cstdint>
+
+std::pair<std::size_t *, std::size_t> load(
+    std::atomic<std::int64_t>& m_beginChange,
+    std::atomic<std::int64_t>& m_endChange,
+    const std::pair<std::size_t*, std::size_t>& p)
+{
+    while (true)
+    {
+        std::int64_t changeNumber = m_endChange.load(std::memory_order_seq_cst);
+
+        std::size_t *array = p.first;
+        std::size_t length = p.second;
+
+        if (changeNumber == m_beginChange.load(std::memory_order_seq_cst))
+        {
+            return { array, length };
+        }
+    }
+}
+```
+
+At -O2 clang-13 and onwards generate the following code:
+
+``` asm
+        mov     r8, qword ptr [rsi]
+        mov     rax, qword ptr [rdx]
+        mov     r9, qword ptr [rdx + 8]
+        mov     rcx, qword ptr [rdi]
+        cmp     r8, rcx
+        jne     .LBB0_1
+        mov     rdx, r9
+        ret
+```
+
+This looks correct to me in regards to ordering.
+
+At -01 clang-13 generates the same code.
+
+Starting with clang-14 we get the following code generation at -O1:
+
+``` asm
+        mov     r8, qword ptr [rsi]
+        mov     rcx, qword ptr [rdi]
+        cmp     r8, rcx
+        cmove   rax, qword ptr [rdx]
+        cmove   r9, qword ptr [rdx + 8]
+        jne     .LBB0_1
+        mov     rdx, r9
+        ret
+```
+
+This looks wrong to me. The loads from the pair have now been reordered to after the comparison. If I am not mistaken that is against sequential consistent ordering rules which prevent any reordering across atomic operations (read,write,modify).
+
+Indeed, at -O2 clang-14 and later do again generate the what I believe is the correct code as shown in the first snippet without the conditional moves.
+
+Can you confirm whether this is a bug or indeed allowed by the standard?
+
+Please see here for a godbolt link: https://gcc.godbolt.org/z/1MW6e6dh6
+
+This originally came up in an Aeron issue. See https://github.com/real-logic/aeron/issues/1411 for more details but above should be the minimal example.
+
+Thanks,
+Stephan 
+
+---
+
+# 72
+### compiler : `LLVM`
+### title : `Wrongful cleanup for `trivial_abi` parameter after passing it to callee`
+### open_at : `2023-01-17T22:11:49Z`
+### link : https://github.com/llvm/llvm-project/issues/60112
+### status : `open`
+### tags : `clang:codegen, miscompilation, `
+### content : 
+Invoking `caller` in the following code leads to double destruction:
+
+```c++
+struct __attribute__((trivial_abi)) trivial {
+  trivial() = default;
+  trivial(const trivial &) noexcept;
+  ~trivial();
+  int* p = nullptr;
+};
+
+struct other {
+  other() = default;
+  other(const other&) noexcept;
+  ~other();
+};
+
+void callee(trivial f, other) { throw 0; }
+
+bool b = true;
+
+void caller() {
+  trivial f;
+  other n;
+  b ? callee(f, n) : void();
+}
+```
+
+Since `trivial` has a `trivial_abi` attribute, it must generally be cleaned up by the callee (except if initialization of another parameter fails, which cannot happen here due to the `noexcept` on the `other` copy constructor). But the code around the call looks like this:
+
+```llvm
+define dso_local void @_Z6callerv() #0 personality ptr @__gxx_personality_v0 {
+entry:
+  ; ... setting up locals
+  store i1 false, ptr %cleanup.cond, align 1
+  store i1 false, ptr %cleanup.cond2, align 1
+  br i1 %tobool, label %cond.true, label %cond.false
+
+cond.true:                                        ; preds = %entry
+  call void @_ZN7trivialC1ERKS_(ptr noundef nonnull align 8 dereferenceable(8) %agg.tmp, ptr noundef nonnull align 8 dereferenceable(8) %f) #3
+  store i1 true, ptr %cleanup.cond, align 1
+  call void @_ZN5otherC1ERKS_(ptr noundef nonnull align 1 dereferenceable(1) %agg.tmp1, ptr noundef nonnull align 1 dereferenceable(1) %n) #3
+  store i1 true, ptr %cleanup.cond2, align 1
+  %coerce.dive = getelementptr inbounds %struct.trivial, ptr %agg.tmp, i32 0, i32 0
+  %1 = load ptr, ptr %coerce.dive, align 8
+  invoke void @_Z6callee7trivial5other(ptr %1, ptr noundef %agg.tmp1)
+          to label %invoke.cont unwind label %lpad
+
+lpad:                                             ; preds = %cond.true
+  %2 = landingpad { ptr, i32 }
+          cleanup
+  ; ... exception logistics
+  %cleanup.is_active3 = load i1, ptr %cleanup.cond2, align 1       ; = true
+  br i1 %cleanup.is_active3, label %cleanup.action4, label %cleanup.done5
+
+cleanup.action4:                                  ; preds = %lpad
+  call void @_ZN5otherD1Ev(ptr noundef nonnull align 1 dereferenceable(1) %agg.tmp1) #3
+  br label %cleanup.done5
+
+cleanup.done5:                                    ; preds = %cleanup.action4, %lpad
+  %cleanup.is_active6 = load i1, ptr %cleanup.cond, align 1        ; = true
+  br i1 %cleanup.is_active6, label %cleanup.action7, label %cleanup.done8
+
+cleanup.action7:                                  ; preds = %cleanup.done5
+  call void @_ZN7trivialD1Ev(ptr noundef nonnull align 8 dereferenceable(8) %agg.tmp) #3
+  br label %cleanup.done8
+
+cleanup.done8:                                    ; preds = %cleanup.action7, %cleanup.done5
+  call void @_ZN5otherD1Ev(ptr noundef nonnull align 1 dereferenceable(1) %n) #3
+  call void @_ZN7trivialD1Ev(ptr noundef nonnull align 8 dereferenceable(8) %f) #3
+  br label %eh.resume
+
+eh.resume:                                        ; preds = %cleanup.done8
+  ; ... exception logistics
+  resume { ptr, i32 } %lpad.val9
+}
+```
+So if `caller` throws, we destruct both parameters (and both locals). But we don't own the first parameter anymore after the call. Inspecting `callee` shows that it calls `_ZN7trivialD1Ev` on unwinding the exception that it has thrown. So we destruct the first parameter twice.
+
+If we drop the ternary and unconditionally call `callee`, all is fine. We get:
+```llvm
+define dso_local void @_Z6callerv() #0 personality ptr @__gxx_personality_v0 {
+entry:
+  ; ... setting up locals
+  call void @_ZN7trivialC1ERKS_(ptr noundef nonnull align 8 dereferenceable(8) %agg.tmp, ptr noundef nonnull align 8 dereferenceable(8) %f) #3
+  call void @_ZN5otherC1ERKS_(ptr noundef nonnull align 1 dereferenceable(1) %agg.tmp1, ptr noundef nonnull align 1 dereferenceable(1) %n) #3
+  %coerce.dive = getelementptr inbounds %struct.trivial, ptr %agg.tmp, i32 0, i32 0
+  %0 = load ptr, ptr %coerce.dive, align 8
+  invoke void @_Z6callee7trivial5other(ptr %0, ptr noundef %agg.tmp1)
+          to label %invoke.cont unwind label %lpad
+
+lpad:                                             ; preds = %entry
+  %1 = landingpad { ptr, i32 }
+          cleanup
+  ; ... exception logistics
+  call void @_ZN5otherD1Ev(ptr noundef nonnull align 1 dereferenceable(1) %agg.tmp1) #3
+  call void @_ZN5otherD1Ev(ptr noundef nonnull align 1 dereferenceable(1) %n) #3
+  call void @_ZN7trivialD1Ev(ptr noundef nonnull align 8 dereferenceable(8) %f) #3
+  br label %eh.resume
+
+eh.resume:                                        ; preds = %lpad
+  ; ... exception logistics
+  resume { ptr, i32 } %lpad.val2
+}
+```
+
+It gets more interesting if we drop `noexcept` from `other`'s copy constructor:
+```llvm
+define dso_local void @_Z6callerv() #0 personality ptr @__gxx_personality_v0 {
+entry:
+  ; ... setting up locals
+  store i1 false, ptr %cleanup.cond, align 1
+  store i1 false, ptr %cleanup.cond2, align 1
+  br i1 %tobool, label %cond.true, label %cond.false
+
+cond.true:                                        ; preds = %entry
+  call void @_ZN7trivialC1ERKS_(ptr noundef nonnull align 8 dereferenceable(8) %agg.tmp, ptr noundef nonnull align 8 dereferenceable(8) %f) #4
+  store i1 true, ptr %cleanup.cond, align 1
+  invoke void @_ZN5otherC1ERKS_(ptr noundef nonnull align 1 dereferenceable(1) %agg.tmp1, ptr noundef nonnull align 1 dereferenceable(1) %n)
+          to label %invoke.cont unwind label %lpad
+
+invoke.cont:                                      ; preds = %cond.true
+  store i1 true, ptr %cleanup.cond2, align 1
+  %coerce.dive = getelementptr inbounds %struct.trivial, ptr %agg.tmp, i32 0, i32 0
+  %1 = load ptr, ptr %coerce.dive, align 8
+  store i1 false, ptr %cleanup.cond, align 1                         ; !!!
+  invoke void @_Z6callee7trivial5other(ptr %1, ptr noundef %agg.tmp1)
+          to label %invoke.cont4 unwind label %lpad3
+
+lpad:                                             ; preds = %cond.true
+  %2 = landingpad { ptr, i32 }
+          cleanup
+  ; ... exception logistics
+  br label %ehcleanup
+
+lpad3:                                            ; preds = %invoke.cont
+  %5 = landingpad { ptr, i32 }
+          cleanup
+  ; ... exception logistics
+  %cleanup.is_active5 = load i1, ptr %cleanup.cond2, align 1      ; = true
+  br i1 %cleanup.is_active5, label %cleanup.action6, label %cleanup.done7
+
+cleanup.action6:                                  ; preds = %lpad3
+  call void @_ZN5otherD1Ev(ptr noundef nonnull align 1 dereferenceable(1) %agg.tmp1) #4
+  br label %cleanup.done7
+
+cleanup.done7:                                    ; preds = %cleanup.action6, %lpad3
+  br label %ehcleanup
+
+ehcleanup:                                        ; preds = %cleanup.done7, %lpad
+  %cleanup.is_active8 = load i1, ptr %cleanup.cond, align 1       ; = phi i1 [ false, %cleanup.done7 ], [ true, %lpad ]
+  br i1 %cleanup.is_active8, label %cleanup.action9, label %cleanup.done10
+
+cleanup.action9:                                  ; preds = %ehcleanup
+  call void @_ZN7trivialD1Ev(ptr noundef nonnull align 8 dereferenceable(8) %agg.tmp) #4
+  br label %cleanup.done10
+
+cleanup.done10:                                   ; preds = %cleanup.action9, %ehcleanup
+  call void @_ZN5otherD1Ev(ptr noundef nonnull align 1 dereferenceable(1) %n) #4
+  call void @_ZN7trivialD1Ev(ptr noundef nonnull align 8 dereferenceable(8) %f) #4
+  br label %eh.resume
+
+eh.resume:                                        ; preds = %cleanup.done10
+  ; ... exception logistics
+  resume { ptr, i32 } %lpad.val13
+}
+```
+So after having initialized the second parameter, and before handing ownership of the `trivial_abi` object into the callee, we write `false` into `cleanup.cond`. So we only clean up if initializing the second parameter failed and we couldn't pass on the object.`
+
+
+---
+
+# 73
+### compiler : `LLVM`
+### title : `Constant propagation makes a register value forgotten`
+### open_at : `2023-01-17T15:08:37Z`
+### link : https://github.com/llvm/llvm-project/issues/60103
+### status : `open`
+### tags : `llvm:optimizations, missed-optimization, `
+### content : 
+```cpp
+template <unsigned X>
+int go(int) noexcept;
+
+int sw(int arg)
+{
+    switch (arg)
+    {
+        case 0: return go<0>(arg);
+        case 1: return go<1>(arg);
+        case 2: return go<2>(arg);
+        case 3: return go<3>(arg);
+        case 4: return go<4>(arg);
+    }
+
+    return 0;
+}
+```
+
+In this example `arg` argument is forwarded to `go` calls. Although the value is already in the right register the register is re-assigned because on the IR level the usage is converted to constant.
+
+```asm
+.LBB0_3:
+        mov     edi, 1
+        jmp     int go<1u>(int)                   # TAILCALL
+```
+
+https://godbolt.org/z/cczTP5v1q
+
+
+---
+
+# 74
+### compiler : `LLVM`
+### title : `Thrown exception in `nothrow` function not detected`
+### open_at : `2023-01-16T21:17:21Z`
+### link : https://github.com/llvm/llvm-project/issues/60086
+### status : `open`
+### tags : `c++, clang:diagnostics, `
+### content : 
+If an exception is thrown in a function marked with `nothrow` clang usually reports a warning.
+
+In the following example however an exception is thrown but clang fails to detect it and the 
+warning is not reported at all.
+
+```c++
+void foo() noexcept {
+  try {
+    double *a[2][3];
+    throw a;
+  } catch (const double *const(*)[3]) {
+  }
+}
+```
+
+What makes this more interesting is that on [cppreference](https://en.cppreference.com/w/cpp/language/try_catch) the following can be seen:
+```
+When an exception is thrown by any statement in compound-statement, the exception object of type E is 
+matched against the types of the formal parameters T of each catch-clause in handler-seq, in the order in 
+which the catch clauses are listed. The exception is a match if any of the following is true:
+
+...
+- T is (possibly cv-qualified) U or const U& (since C++14), and U is a pointer or pointer to member type, and
+  E is also a pointer or pointer to member type that is implicitly convertible to U by one or more of
+  - a standard pointer conversion other than one to a private, protected, or ambiguous base class
+  - **a qualification conversion**
+  - a function pointer conversion (since C++17)
+...
+```
+While the [qualification conversion section](https://en.cppreference.com/w/cpp/language/implicit_conversion#Qualification_conversions) lists a number of rules that describe when can 
+the said conversion be performed, it gives the following example:
+```c++
+double *a[2][3];
+double const * const (*ap)[3] = a; // OK
+```
+So technically the thrown type in `foo()` can be converted to the type in the handler, which
+is the reason for clang not reporting a warning but the exception is thrown regardless. 
+
+See the example on [godbolt](https://godbolt.org/z/sEz8eYeP1). Note that MSVC is able to detect the thrown exception.`
+
+
+---
+
+# 75
+### compiler : `LLVM`
+### title : `[Clang]: Incorrect inheritance of protected (default) constructor`
+### open_at : `2023-01-13T10:11:59Z`
+### link : https://github.com/llvm/llvm-project/issues/59996
+### status : `open`
+### tags : `c++17, clang:frontend, confirmed, `
+### content : 
+The snippet
+```cpp
+#include <iostream>
+#include <type_traits>
+
+class Foo {
+protected:
+   Foo() = default; 
+};
+
+class Bar : public Foo {
+public:
+    using Foo::Foo;
+
+    Bar(const Bar &) = default;
+};
+
+int main() {
+    std::cout << std::boolalpha << "Is default constructible: "
+        << std::is_default_constructible_v< Bar > << std::endl;
+    
+    Bar b;
+}
+```
+compiles fines with Clang (trunk and older), whereas it fails to compile with GCC and MSVC because `Bar` has no public default constructor.
+
+If the line `Bar b;` is commented out, the program compiled with Clang will report `true` whereas GCC and MSVC report `false`. I suspect that Clang's behavior here is related to the abovementioned problem.
+
+Note: If the visibility of `Bar`'s constructor is changed to `private`, then everything works as expected.
+
+[Godbolt](https://godbolt.org/z/ex3eWoh5z)
+
+I am not nearly competent enough to look up the expected behavior in the C++ standard, but given that GCC  and MSVC seem to agree on what the result should be, I figured that this is likely a bug in Clang :shrug: 
+
+
+---
+
+# 76
+### compiler : `LLVM`
+### title : wrong type for `auto&` parameter when deducing a class template partial specialization
+### open_at : `2023-01-13T01:14:19Z`
+### link : https://github.com/llvm/llvm-project/issues/59981
+### status : `open`
+### tags : `c++17, clang:frontend, rejects-valid, `
+### content : 
+Clang rejects this valid code:
+
+```c++
+template<auto &X, int> struct A;
+template<auto &X> struct A<X, 0> {};
+
+const int n = 0;
+A<n, 0> a;
+```
+
+... apparently because it thinks that the expression `X` in `struct A<X, 0>` is an lvalue of type `int`, not an lvalue of type `const int`, when considering partial specializations of `A<n, 0>`.`
+
+
+---
+
+
+# 77
+### compiler : `LLVM`
+### title : `Clang and GCC differ in instantiation strategy of constexpr and incomplete types`
+### open_at : `2023-01-12T13:46:01Z`
+### link : https://github.com/llvm/llvm-project/issues/59966
+### status : `open`
+### tags : `c++20, clang:frontend, `
+### content : 
+Consider this code compiled in C++20 mode:
+```cpp
+#include <vector>
+
+struct X{
+    struct Inner;
+    unsigned size() { return children.size(); }
+    std::vector<Inner> children;
+};
+
+struct X::Inner {
+    int a;
+};
+```
+MSVC and GCC will succeed, but Clang (trunk, WIP version 16 at the time of writing) [produces an error](https://gcc.godbolt.org/z/jY4coE9aq):
+```console
+/lib/gcc/x86_64-linux-gnu/13.0.0/../../../../include/c++/13.0.0/bits/stl_vector.h:988:50: error: arithmetic on a pointer to an incomplete type 'X::Inner'
+      { return size_type(this->_M_impl._M_finish - this->_M_impl._M_start); }
+```
+
+This boils down to different approaches when instantiating `constexpr` functions:
+```cpp
+template <class T>
+struct vector {
+    T* ptr;
+    constexpr unsigned size() { return ptr - ptr; }
+};
+
+struct X{
+    struct Inner;
+    unsigned size() { return children.size(); }
+    vector<Inner> children;
+};
+
+struct X::Inner {
+    int a;
+};
+```
+Clang instantiates the bodies of `constexpr` functions eagerly, other compilers seem to [delay](https://gcc.godbolt.org/z/fxxovcP68) the instantiation until the end of the TU, e.g. this code [fails](https://gcc.godbolt.org/z/cfTbdGhbd) in all compilers:
+```cpp
+template <class T>
+struct vector {
+    T* ptr;
+    constexpr unsigned size() { return ptr - ptr; }
+};
+
+struct X{
+    struct Inner;
+    static constexpr int a = vector<Inner>().size();
+    vector<Inner> children;
+};
+
+struct X::Inner {
+    int a;
+};
+```
+
+We have observed that this pattern is used in much of the existing code and I believe Clang should follow the GCC's and MSVC's approach here, even though it is not mandated by the standard:
+- it avoids breaking code that worked in C++17 when migrating to C++20.
+- it allows to compile future C++20 code written for GCC and MSVC with Clang with no changes.`
+
+
+---
+
+
+# 78
+### compiler : `LLVM`
+### title : `[LoopReroll] with multiple roots incorrectly reorders instructions with side effects`
+### open_at : `2023-01-05T13:19:42Z`
+### link : https://github.com/llvm/llvm-project/issues/59841
+### status : `open`
+### tags : `miscompilation, loopoptim, `
+### content : 
+
+이버그 재현이 안됨
+
+https://godbolt.org/z/11E3zcsbz
+
+The test below doesn't use contiguous IV increments, so it can't be rerolled that easily. Source iteration uses iv, iv+1, +2, +4, +5, +4 (skips + 3).
+Plus the IV multiplication by 3 isn't taken into account.
+
+Alive2 output:
+```llvm
+; Transforms/LoopReroll/extra_instr.ll
+define void @rerollable2() {
+%entry:
+  br label %loop
+
+%loop:
+  %iv = phi i32 [ 0, %entry ], [ %iv.next, %loop ]
+  %iv.mul3 = mul nsw nuw i32 %iv, 3
+  %iv.scaled = add nsw nuw i32 %iv.mul3, 20
+  %iv.scaled.div5 = udiv i32 %iv.scaled, 5
+  call void @bar(i32 %iv.scaled.div5)
+  %iv.scaled.add1 = add nsw nuw i32 %iv.scaled, 1
+  %iv.scaled.add1.div5 = udiv i32 %iv.scaled.add1, 5
+  call void @bar(i32 %iv.scaled.add1.div5)
+  %iv.scaled.add2 = add nsw nuw i32 %iv.scaled, 2
+  %iv.scaled.add2.div5 = udiv i32 %iv.scaled.add2, 5
+  call void @bar(i32 %iv.scaled.add2.div5)
+  %iv.scaled.add4 = add nsw nuw i32 %iv.scaled, 4
+  %iv.scaled.add4.div5 = udiv i32 %iv.scaled.add4, 5
+  call void @bar(i32 %iv.scaled.add4.div5)
+  %iv.scaled.add5 = add nsw nuw i32 %iv.scaled, 5
+  %iv.scaled.add5.div5 = udiv i32 %iv.scaled.add5, 5
+  call void @bar(i32 %iv.scaled.add5.div5)
+  %iv.scaled.add6 = add nsw nuw i32 %iv.scaled, 6
+  %iv.scaled.add6.div5 = udiv i32 %iv.scaled.add6, 5
+  call void @bar(i32 %iv.scaled.add6.div5)
+  %iv.next = add nsw nuw i32 %iv, 1
+  %cmp = icmp ult i32 %iv.next, 3
+  br i1 %cmp, label #sink, label %exit
+
+%exit:
+  ret void
+}
+=>
+define void @rerollable2() {
+%entry:
+  br label %loop
+
+%loop:
+  %iv = phi i32 [ 0, %entry ], [ %iv.next, %loop ]
+  %0 = add i32 %iv, 24
+  %1 = add i32 %iv, 20
+  %iv.scaled.div5 = udiv i32 %1, 5
+  call void @bar(i32 %iv.scaled.div5)
+  %iv.scaled.add4.div5 = udiv i32 %0, 5
+  call void @bar(i32 %iv.scaled.add4.div5)
+  %iv.next = add nsw nuw i32 %iv, 1
+  %exitcond = icmp eq i32 %iv, 8
+  br i1 %exitcond, label %exit, label %loop#2
+
+%loop#2:
+  %iv#2 = phi i32 [ %iv.next, %loop ]
+  %0#2 = add i32 %iv#2, 24
+  %1#2 = add i32 %iv#2, 20
+  %iv.scaled.div5#2 = udiv i32 %1#2, 5
+  call void @bar(i32 %iv.scaled.div5#2)
+  %iv.scaled.add4.div5#2 = udiv i32 %0#2, 5
+  call void @bar(i32 %iv.scaled.add4.div5#2)
+  %iv.next#2 = add nsw nuw i32 %iv#2, 1
+  %exitcond#2 = icmp eq i32 %iv#2, 8
+  br i1 %exitcond#2, label %exit, label #sink
+
+%exit:
+  ret void
+}
+Transformation doesn't verify! (unsound)
+ERROR: Source is more defined than target
+
+Example:
+
+Source:
+  >> Jump to %loop
+i32 %iv = #x00000000 (0)
+i32 %iv.mul3 = #x00000000 (0)
+i32 %iv.scaled = #x00000014 (20)
+i32 %iv.scaled.div5 = #x00000004 (4)
+Function @bar returned
+i32 %iv.scaled.add1 = #x00000015 (21)
+i32 %iv.scaled.add1.div5 = #x00000004 (4)
+Function @bar returned
+i32 %iv.scaled.add2 = #x00000016 (22)
+i32 %iv.scaled.add2.div5 = #x00000004 (4)
+Function @bar returned
+i32 %iv.scaled.add4 = #x00000018 (24)
+i32 %iv.scaled.add4.div5 = #x00000004 (4)
+Function @bar returned
+i32 %iv.scaled.add5 = #x00000019 (25)
+i32 %iv.scaled.add5.div5 = #x00000005 (5)
+Function @bar returned
+i32 %iv.scaled.add6 = #x0000001a (26)
+i32 %iv.scaled.add6.div5 = #x00000005 (5)
+...
+
+
+Target:
+  >> Jump to %loop
+i32 %iv = #x00000000 (0)
+i32 %0 = #x00000018 (24)
+i32 %1 = #x00000014 (20)
+i32 %iv.scaled.div5 = #x00000004 (4)
+Function @bar returned
+i32 %iv.scaled.add4.div5 = #x00000004 (4)
+Function @bar returned
+i32 %iv.next = #x00000001 (1)
+i1 %exitcond = #x0 (0)
+  >> Jump to %loop#2
+i32 %iv#2 = #x00000001 (1)
+i32 %0#2 = #x00000019 (25)
+i32 %1#2 = #x00000015 (21)
+i32 %iv.scaled.div5#2 = #x00000004 (4)
+Function @bar returned
+i32 %iv.scaled.add4.div5#2 = #x00000005 (5)
+Function @bar triggered UB
+i32 %iv.next#2 = UB triggered!
+```
+
+
+---
+
+# 79
+### compiler : `LLVM`
+### title : `A miscompile in instcombine, opt pass.`
+### open_at : `2023-01-05T04:52:33Z`
+### link : https://github.com/llvm/llvm-project/issues/59836
+### status : `closed`
+### tags : `miscompilation, llvm:instcombine, `
+### content : 
+Test case:
+https://llvm.godbolt.org/z/6W61azGsn
+```llvm
+define i1 @pr4917_4(i32 %x) {
+entry:
+  %r = zext i32 %x to i64
+  %0 = trunc i64 %r to i34
+  %new0 = mul i34 %0, %0
+  ;3363831808 * 3363831808 % 2^34 == 0, thus new0 is 0
+  %last = zext i34 %new0 to i64
+  %overflow = icmp ule i64 %last, 4294967295 ;FFFFFFFF
+  ret i1 %overflow
+}
+```
+This test case is a mutated version of https://github.com/llvm/llvm-project/blob/main/llvm/test/Transforms/InstCombine/overflow-mul.ll#L77
+
+Conisder input `x=3363831808`, the original function returns 1 baceuse `3363831808^2 % 2^34 ==0`. However, the optmized function returns 0.
+https://alive2.llvm.org/ce/z/5nNo_z
+The ouput is verified by `lli` with following test driver:
+```cpp
+#include <iostream>
+
+bool f(unsigned int x);
+
+int main(){
+  unsigned int a=3363831808;
+  std::cout<<f(a)<<"\n";
+}
+```
+So the miscompile does exist.
+@regehr @nunoplopes 
+
+
+---
+
+
+# 80
+### compiler : `LLVM`
+### title : `clang 15 built kernel crashes w. "BUG: kernel NULL pointer dereference, address: 00000000", gcc 12 built kernel with same config boots fine (6.1-rc7, x86_32)`
+### open_at : `2022년 12월 1일`
+### link : https://github.com/ClangBuiltLinux/linux/issues/1766
+### status : `closed`
+### tags : `[ARCH] x86, [BUG] llvm, [FIXED][LLVM] 15, [FIXED][LLVM] 16`
+### content :
+
+https://godbolt.org/z/oWjEs7do3
+
+This is an interesting one!
+
+Gave 6.1-rc7 a test ride on ye goode olde Pentium 4 box and noticed while the kernel boots just fine when built with gcc 12 toolchain it crashes at boot when it is built with clang 15 toolchain, same kernel .config used.
+
+This is reproducable and happens everytime at boot on this machine;
+```bash
+[...]
+BUG: kernel NULL pointer dereference, address: 00000000
+#PF: supervisor write access in kernel mode
+#PF: error_code(0x0002) - not-present page
+*pde = 00000000 
+Oops: 0002 [#1] SMP DEBUG_PAGEALLOC
+CPU: 1 PID: 1 Comm: init Not tainted 6.1.0-rc7-P4 #3
+Hardware name:  /FS51, BIOS 6.00 PG 12/02/2003
+EIP: mast_split_data+0x198/0x260
+Code: 84 e3 00 00 00 89 fa c7 45 ec 00 00 00 00 31 db 81 e2 00 ff ff ff 0f b6 f9 8b 4d ec 25 00 ff ff ff 8a 6d f3 09 da d3 e7 09 d7 <89> 38 8b 7e 10 8b 46 08 8b 50 0c 8b 7f 0c fe c5 8b 46 04 8b 70 0c
+EAX: 00000000 EBX: 00000006 ECX: 00000003 EDX: c123bd06
+ESI: c11ffbf0 EDI: c123bd06 EBP: c11ff94c ESP: c11ff934
+DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068 EFLAGS: 00010286
+CR0: 80050033 CR2: 00000000 CR3: 0276a000 CR4: 000006d0
+Call Trace:
+ mas_wr_modify+0xc76/0x18c0
+ mas_wr_store_entry+0x235/0x2b0
+ mas_store_prealloc+0xb8/0x100
+ vma_mas_store+0x57/0xd0
+ __vma_adjust+0x3f0/0x5b0
+ ? rcu_read_lock_sched_held+0xa/0x70
+ __split_vma+0xc3/0x120
+ do_mas_align_munmap+0x1c8/0x460
+ mmap_region+0x260/0x8a0
+ ? rcu_read_lock_sched_held+0xa/0x70
+ ? arch_get_unmapped_area_topdown+0x12/0x20
+ do_mmap+0x33d/0x4b0
+ ? prep_transhuge_page+0x20/0x20
+ vm_mmap_pgoff+0x7f/0x100
+ ksys_mmap_pgoff+0x129/0x170
+ __ia32_sys_mmap_pgoff+0x1c/0x30
+ do_int80_syscall_32+0x53/0x80
+ entry_INT80_32+0xf0/0xf0
+EIP: 0xb7f19fad
+Code: 00 f7 d8 89 82 38 0a 00 00 b8 ff ff ff ff c3 66 90 66 90 66 90 66 90 66 90 66 90 66 90 53 57 55 8b 1f 8b 6f 08 8b 7f 04 cd 80 <5d> 5f 5b c3 e8 cf 01 00 00 81 c1 16 e0 00 00 8b 44 24 04 3d 85 00
+EAX: ffffffda EBX: b787a000 ECX: 00004000 EDX: 00000005
+ESI: 00000812 EDI: 00000003 EBP: 00000002 ESP: bfb43eb0
+DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 007b EFLAGS: 00000202
+Modules linked in:
+CR2: 0000000000000000
+---[ end trace 0000000000000000 ]---
+EIP: mast_split_data+0x198/0x260
+Code: 84 e3 00 00 00 89 fa c7 45 ec 00 00 00 00 31 db 81 e2 00 ff ff ff 0f b6 f9 8b 4d ec 25 00 ff ff ff 8a 6d f3 09 da d3 e7 09 d7 <89> 38 8b 7e 10 8b 46 08 8b 50 0c 8b 7f 0c fe c5 8b 46 04 8b 70 0c
+EAX: 00000000 EBX: 00000006 ECX: 00000003 EDX: c123bd06
+ESI: c11ffbf0 EDI: c123bd06 EBP: c11ff94c ESP: c11ff934
+DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068 EFLAGS: 00010286
+CR0: 80050033 CR2: 00000000 CR3: 0276a000 CR4: 000006d0
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000009
+Kernel Offset: disabled
+Rebooting in 40 seconds..
+Some data about the machine:
+
+ # inxi -bZ
+System:
+  Kernel: 6.1.0-rc7-P4 arch: i686 bits: 32 Console: pty pts/0
+    Distro: Gentoo Base System release 2.9
+Machine:
+  Type: Desktop Mobo: Shuttle model: FS51 serial: N/A BIOS: Phoenix
+    v: 6.00 PG date: 12/02/2003
+CPU:
+  Info: single core Intel Pentium 4 [MT] speed (MHz): avg: 3063
+Graphics:
+  Device-1: AMD RV350 [Radeon 9550/9600/X1050 Series] driver: radeon
+    v: kernel
+  Display: x11 server: X.Org v: 21.1.1 driver: X: loaded: radeon
+    unloaded: fbdev,modesetting gpu: radeon resolution: 1400x900~60Hz
+  OpenGL: renderer: llvmpipe (LLVM 14.0.6 128 bits) v: 4.5 Mesa 22.1.7
+Network:
+  Device-1: Ralink RT2500 Wireless 802.11bg driver: rt2500pci
+  Device-2: Realtek RTL-8100/8101L/8139 PCI Fast Ethernet Adapter
+    driver: 8139too
+If you think it would be a good idea I could mail a bug report to linux-mm too.
+dmesg_61-rc7_p4_clang.txt
+dmesg_61-rc7_p4_gcc.txt
+config_61-rc7_p4-clang.txt
+config_61-rc7_p4-gcc.txt
+```
+
+---
+
+# 81
+### compiler : `LLVM`
+### title : clang-15: May produce invalid code when -O1 (or higher) is used with `-fzero-call-used-regs=all`
+### open_at : `2022년 9월 12일`
+### link : https://github.com/llvm/llvm-project/issues/57692
+### status : `closed`
+### tags : `llvm:codegen, miscompilation, release:backport, release:merged`
+### content :
+
+https://github.com/llvm/llvm-project/issues/59242
+
+This report is copied from https://bugs.gentoo.org/869839
+
+Description:
+When building binaries using `-O1` (or higher) and the `-fzero-call-used-regs=all` the resultant object files may create a broken binary when linked to.
+
+Reproducible:
+Always
+
+Steps to Reproduce:
+Create a file named `get_progname.c`
+Paste the following into `get_progname.c`:
+```c
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+char *ssh_get_progname(char *argv0)
+{
+  char *p, *q;
+  extern char *__progname;
+
+  p = __progname;
+  if ((q = strdup(p)) == NULL) {
+      perror("strdup");
+      exit(1);
+  }
+  return q;
+}
+```
+Execute `clang -O1 -ggdb -fzero-call-used-regs=all -c get_progname.c`
+Create a file named `test.c`
+Paste the following into `test.c`:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
+
+extern char *__progname;
+
+char *ssh_get_progname(char *);
+
+int main(int argc, char **argv)
+{
+  __progname = ssh_get_progname(argv[0]);
+  openlog(argv[0], 1, LOG_USER);
+  return 0;
+}
+```
+
+Execute `clang -O1 -ggdb -fzero-call-used-regs=all -c test.c`
+Execute `clang -o test test.o get_progname.o`
+run `./test`
+
+### Actual Results:
+`./test` segfaults due to `argv[0]` being incorrectly set to NULL during execution
+
+### Expected Results:
+`./test` should run and exit successfully.
+
+<details><summary>Additional Info</summary>
+<p>
+
+```
+Portage 3.0.35 (python 3.10.7-final-0, default/linux/amd64/17.1/desktop, gcc-12.2.0, glibc-2.35-r8, 5.18.14-gentoo x86_64)
+=================================================================
+System uname: [Linux-5.18.14-gentoo-x86_64-Intel-R-_Core-TM-_i7-4771_CPU_@_3.50GHz-with-glibc2.35](mailto:Linux-5.18.14-gentoo-x86_64-Intel-R-_Core-TM-_i7-4771_CPU_@_3.50GHz-with-glibc2.35)
+KiB Mem:    32557860 total,   7752032 free
+KiB Swap:    2097148 total,   2045904 free
+Timestamp of repository gentoo: Mon, 12 Sep 2022 06:57:44 +0000
+Head commit of repository gentoo: 3661d51653661eea567088e6e80385d8a14432c4
+
+Timestamp of repository brother-overlay: Sun, 04 Sep 2022 19:46:50 +0000
+Head commit of repository brother-overlay: 2c208f0df5aa5f9f967c361f0e3ad514e50422d0
+
+Head commit of repository magpie: 10f020019b514442260050d216608c67910099cb
+
+sh bash 5.1_p16-r2
+ld GNU ld (Gentoo 2.39 p4) 2.39.0
+app-misc/pax-utils:        1.3.5::gentoo
+app-shells/bash:           5.1_p16-r2::gentoo
+dev-java/java-config:      2.3.1::gentoo
+dev-lang/perl:             5.36.0::gentoo
+dev-lang/python:           3.10.7::gentoo, 3.11.0_rc1_p2::gentoo
+dev-lang/rust:             1.63.0::magpie
+dev-util/cmake:            3.24.1::gentoo
+dev-util/meson:            0.63.2::gentoo
+sys-apps/baselayout:       2.8-r2::gentoo
+sys-apps/openrc:           0.45.2::gentoo
+sys-apps/sandbox:          2.29::gentoo
+sys-devel/autoconf:        2.13-r2::gentoo, 2.71-r2::gentoo
+sys-devel/automake:        1.16.5::gentoo
+sys-devel/binutils:        2.39-r2::gentoo
+sys-devel/binutils-config: 5.4.1::gentoo
+sys-devel/clang:           14.0.6-r1::gentoo, 15.0.0::gentoo
+sys-devel/gcc:             12.2.0::gentoo
+sys-devel/gcc-config:      2.5-r1::gentoo
+sys-devel/libtool:         2.4.7::gentoo
+sys-devel/lld:             15.0.0::gentoo
+sys-devel/llvm:            14.0.6-r2::gentoo, 15.0.0::gentoo
+sys-devel/make:            4.3::gentoo
+sys-kernel/linux-headers:  5.19::gentoo (virtual/os-headers)
+sys-libs/glibc:            2.35-r8::gentoo
+Repositories:
+
+gentoo
+    location: /var/db/repos/gentoo
+    sync-type: git
+    sync-uri: https://github.com/gentoo-mirror/gentoo.git
+    priority: -1000
+    sync-git-verify-commit-signature: true
+
+brother-overlay
+    location: /var/db/repos/brother-overlay
+    sync-type: git
+    sync-uri: https://github.com/gentoo-mirror/brother-overlay.git
+    masters: gentoo
+
+magpie
+    location: /var/db/repos/magpie
+    sync-type: git
+    sync-uri: https://github.com/nvinson/magpie.git
+    masters: gentoo
+
+ACCEPT_KEYWORDS="amd64 ~amd64"
+ACCEPT_LICENSE="* -@EULA"
+AR="llvm-ar"
+CBUILD="x86_64-pc-linux-gnu"
+CC="clang"
+CFLAGS="-march=native -O2 -pipe -D_FORTIFY_SOURCE=3 -fstack-protector-strong -flto=thin"
+CHOST="x86_64-pc-linux-gnu"
+CONFIG_PROTECT="/etc /opt/brother/scanner/brscan4/brsanenetdevice4.cfg /usr/lib64/libreoffice/program/sofficerc /usr/share/gnupg/qualified.txt"
+CONFIG_PROTECT_MASK="/etc/ca-certificates.conf /etc/dconf /etc/env.d /etc/fonts/fonts.conf /etc/gconf /etc/gentoo-release /etc/revdep-rebuild /etc/sandbox.d /etc/terminfo
+ /etc/texmf/language.dat.d /etc/texmf/language.def.d /etc/texmf/updmap.d /etc/texmf/web2c"
+CXX="clang++"
+CXXFLAGS="-march=native -O2 -pipe -D_FORTIFY_SOURCE=3 -fstack-protector-strong -flto=thin"
+DISTDIR="/var/cache/portage/distfiles"
+EMERGE_DEFAULT_OPTS="--quiet-build"
+ENV_UNSET="CARGO_HOME DBUS_SESSION_BUS_ADDRESS DISPLAY GOBIN GOPATH PERL5LIB PERL5OPT PERLPREFIX PERL_CORE PERL_MB_OPT PERL_MM_OPT XAUTHORITY XDG_CACHE_HOME XDG_CONFIG_HO
+ME XDG_DATA_HOME XDG_RUNTIME_DIR"
+FCFLAGS="-march=native -O2 -pipe"
+FEATURES="assume-digests binpkg-docompress binpkg-dostrip binpkg-logs binpkg-multi-instance buildpkg-live config-protect-if-modified distlocks ebuild-locks fixlafiles ipc
+-sandbox merge-sync multilib-strict network-sandbox news parallel-fetch pid-sandbox preserve-libs protect-owned qa-unresolved-soname-deps sandbox sfperms strict unknown-f
+eatures-warn unmerge-logs unmerge-orphans userfetch userpriv usersandbox usersync xattr"
+FFLAGS="-march=native -O2 -pipe"
+GENTOO_MIRRORS="http://distfiles.gentoo.org/"
+LANG="en_US.utf8"
+LDFLAGS="-Wl,-O1 -Wl,--as-needed -fuse-ld=lld -rtlib=compiler-rt -unwindlib=libunwind"
+MAKEOPTS="-j8"
+NM="llvm-nm"
+PKGDIR="/var/cache/binpkgs"
+PORTAGE_CONFIGROOT="/"
+PORTAGE_RSYNC_OPTS="--recursive --links --safe-links --perms --times --omit-dir-times --compress --force --whole-file --delete --stats --human-readable --timeout=180 --ex
+clude=/distfiles --exclude=/local --exclude=/packages --exclude=/.git"
+PORTAGE_TMPDIR="/var/tmp"
+RANLIB="llvm-ranlib"
+SHELL="/bin/zsh"
+USE="X a52 aac acl acpi alsa amd64 branding bzip2 cairo cdda cdr clang cleartype cli corefonts crypt cups dbus dri dts dvd dvdr elogind encode exif flac fortran gdbm gif 
+glamor gpm gtk gui iconv icu ipv6 jpeg lcms libglvnd libnotify libtirpc mad mng mp3 mp4 mpeg multilib ncurses nls nptl ogg opengl openmp pam pango pcre pdf png policykit 
+ppds qt5 readline sdl seccomp spell split-usr ssl startup-notification svg theora tiff truetype udev udisks unicode upower usb vaapi vorbis vpx wxwidgets x264 xattr xcb x
+ml xv xvid zlib" ABI_X86="64" ADA_TARGET="gnat_2020" APACHE2_MODULES="authn_core authz_core socache_shmcb unixd actions alias auth_basic authn_alias authn_anon authn_dbm 
+authn_default authn_file authz_dbm authz_default authz_groupfile authz_host authz_owner authz_user autoindex cache cgi cgid dav dav_fs dav_lock deflate dir disk_cache env
+ expires ext_filter file_cache filter headers include info log_config logio mem_cache mime mime_magic negotiation rewrite setenvif speling status unique_id userdir usertr
+ack vhost_alias" CALLIGRA_FEATURES="karbon sheets words" COLLECTD_PLUGINS="df interface irq load memory rrdtool swap syslog" CPU_FLAGS_X86="aes avx avx2 fma3 mmx mmxext p
+opcnt sse sse2 sse3 sse4 sse4_1 sse4_2 ssse3" ELIBC="glibc" GPSD_PROTOCOLS="ashtech aivdm earthmate evermore fv18 garmin garmintxt gpsclock greis isync itrax mtk3301 nmea
+ ntrip navcom oceanserver oldstyle oncore rtcm104v2 rtcm104v3 sirf skytraq superstar2 timing tsip tripmate tnt ublox ubx" INPUT_DEVICES="libinput" KERNEL="linux" L10N="en
+-US en" LCD_DEVICES="bayrad cfontz cfontz633 glk hd44780 lb216 lcdm001 mtxorb ncurses text" LIBREOFFICE_EXTENSIONS="presenter-console presenter-minimizer" LUA_SINGLE_TARG
+ET="lua5-1" LUA_TARGETS="lua5-1" OFFICE_IMPLEMENTATION="libreoffice" PHP_TARGETS="php7-4 php8-0" POSTGRES_TARGETS="postgres12 postgres13" PYTHON_SINGLE_TARGET="python3_10
+" PYTHON_TARGETS="python3_10" RUBY_TARGETS="ruby27" USERLAND="GNU" VIDEO_CARDS="intel i965" XTABLES_ADDONS="quota2 psd pknock lscan length2 ipv4options ipset ipp2p iface 
+geoip fuzzy condition tee tarpit sysrq proto steal rawnat logmark ipmark dhcpmac delude chaos account"
+Unset:  ADDR2LINE, ARFLAGS, AS, ASFLAGS, CCLD, CONFIG_SHELL, CPP, CPPFLAGS, CTARGET, CXXFILT, ELFEDIT, EXTRA_ECONF, F77FLAGS, FC, GCOV, GPROF, INSTALL_MASK, LC_ALL, LD, L
+EX, LFLAGS, LIBTOOL, LINGUAS, MAKE, MAKEFLAGS, OBJCOPY, OBJDUMP, PORTAGE_BINHOST, PORTAGE_BUNZIP2_COMMAND, PORTAGE_COMPRESS, PORTAGE_COMPRESS_FLAGS, PORTAGE_RSYNC_EXTRA_O
+PTS, READELF, RUSTFLAGS, SIZE, STRINGS, STRIP, YACC, YFLAGS
+```
+
+</p>
+</details>
+
+
+---
+
+# 82
+### compiler : `LLVM`
+### title : `[clang] incorrect code generation when building gawk 5.2.1 using -O2/-O3`
+### open_at : `2023-01-02T21:15:52Z`
+### link : https://github.com/llvm/llvm-project/issues/59792
+### status : `closed`
+### tags : `clang:frontend, miscompilation, release:backport, `
+### content : 
+It was found that when building gawk 5.2.1 with `-O2` or `-O3`, incorrect machine code is generated which is causing differing runtime behavior than expected.
+
+# Background
+Originally I ran into this when upgrading gawk on my personal Gentoo systems to 5.2.1. There is a particular regex[1] used in plymouth which was suddenly erroring that did not previously. Downgrading to gawk 5.1.1, building it with gcc, or disabling compiler optimizations would work around the issue.
+
+This issue is being submitted after some discussion[2] on the gawk-bug mailing list, particularly because of these findings[3].
+
+A simple test case is this command:
+```shell
+head /dev/zero | awk 'BEGIN { RS="[[][:blank:]]" }'
+```
+When running this command, the expected behavior is no output and a clean exit. However, when building gawk 5.2.1 with clang and `-O2` or `-O3`, we see this error (and a non-zero exit code):
+```console
+awk: cmd. line:1: fatal: invalid character class
+```
+
+[1] https://gitlab.freedesktop.org/plymouth/plymouth/-/blob/main/scripts/plymouth-set-default-theme.in#L50
+
+[2] https://lists.gnu.org/archive/html/bug-gawk/2022-12/msg00010.html
+
+[3] https://lists.gnu.org/archive/html/bug-gnulib/2023-01/msg00002.html
+
+This is a serious bug in Clang: it generates incorrect machine code.
+
+The code that Clang generates for the following (`gawk/support/dfa.c` lines `1141-1143`):
+```c
+    ((dfa->syntax.dfaopts & DFA_CONFUSING_BRACKETS_ERROR
+      ? dfaerror : dfawarn)
+     (_("character class syntax is [[:space:]], not [:space:]")));
+```
+is immediately followed by the code generated for the following (`gawk/support/dfa.c` line `1015`):
+```c
+  dfaerror (_("invalid character class"));
+```
+and this is incorrect because the two source code regions are not connected with each other.
+
+You can see the bug in the attached (compressed) file dfa.s which contains the assembly language output. Here's the dfa.s file starting with line 6975:
+
+```bash
+  6975          testb   $4, 456(%r12)
+  6976          movl    $dfawarn, %eax
+  6977          movl    $dfaerror, %ebx
+  6978          cmoveq  %rax, %rbx
+  6979          movl    $.L.str.26, %esi
+  6980          xorl    %edi, %edi
+  6981          movl    $5, %edx
+  6982          callq   dcgettext
+  6983          movq    %rax, %rdi
+  6984          callq   *%rbx
+  6985  .LBB34_144:
+  6986          movl    $.L.str.25, %esi
+  6987          xorl    %edi, %edi
+  6988          movl    $5, %edx
+  6989          callq   dcgettext
+  6990          movq    %rax, %rdi
+  6991          callq   dfaerror
+```
+
+Line 6984, which is source lines `1141-1143` call to either `dfaerror` or `dfawarn`, is immediately followed by the code for source line 1015. This means that at runtime when `dfawarn` returns the code immediately calls `dfaerror`, which is incorrect.
+
+My guess is that Clang got confused because `dfaerror` is declared _Noreturn, so Clang mistakenly assumed that `dfawarn` is also `_Noreturn`, which it is not.
+
+I worked around the Clang bug by installed the attached patch into Gnulib. Please give it a try with Gawk.
+
+Incorrect code generation is a serious bug in Clang; can you please report it to the Clang folks? I am considering using a bigger hammer, and doing this:
+```c
+   #define _Noreturn /*empty*/
+```
+whenever Clang is used, until the bug is fixed.
+
+This is because if the bug occurs here it's likely that similar bugs will occur elsewhere and this sort of thing can be really subtle and hard to catch or work around in general. Clang really needs to get this fixed.
+
+Thanks.
+
+---
+
+# 83
+### compiler : `LLVM`
+### title : Clang mistakenly elides coroutine allocation resulting in a segfault and `stack-use-after-return` from `AddressSanitizer`
+### open_at : `2022-12-27T18:58:41Z`
+### link : https://github.com/llvm/llvm-project/issues/59723
+### status : `closed`
+### tags : `miscompilation, release:backport, release:merged, coroutines, `
+### content : 
+
+https://llvm.godbolt.org/z/4ebqEGnPf
+
+The problem was submitted in https://github.com/llvm/llvm-project/issues/56513 and https://github.com/llvm/llvm-project/issues/56455 but there were no responses.
+I thought it was specific to Windows, but it turned out to happen also on Linux with Clang 15.0.6 with optimization level `-O3` the address sanitizer detects the access of stack after the coroutine returns.
+The code in the [#56513](https://github.com/llvm/llvm-project/issues/56513) had a race condition problem in `final_suspend` but it was not the cause of the problem.
+
+Compile the following code with:
+```shell
+clang++-15 clangcorobug.cpp -std=c++20 -O3 -g -fsanitize=address -lpthread -o corobug
+```
+
+```cpp
+#include <atomic>
+#include <thread>
+#include <condition_variable>
+#include <coroutine>
+#include <variant>
+#include <deque>
+#include <cassert>
+
+// executor and operation base
+
+class bug_any_executor;
+
+struct bug_async_op_base {
+	void invoke() {
+		invoke_operation();
+	}
+
+protected:
+
+	~bug_async_op_base() = default;
+
+	virtual void invoke_operation() = 0;
+};
+
+class bug_any_executor {
+	using op_type = bug_async_op_base;
+
+public:
+
+	virtual ~bug_any_executor() = default;
+
+	// removing noexcept enables clang to find that the pointer has escaped
+	virtual void post(op_type& op) noexcept = 0;
+
+	virtual void wait() noexcept = 0;
+};
+
+class bug_thread_executor : public bug_any_executor {
+	void work_thd() {
+		while (!ops_.empty()) {
+			std::unique_lock<std::mutex> lock{ lock_ };
+			cv_.wait(lock, [this] { return !ops_.empty(); });
+
+			while (!ops_.empty()) {
+				bug_async_op_base* op = ops_.front();
+				ops_.pop_front();
+				op->invoke();
+			}
+		}
+
+		cv_.notify_all();
+	}
+
+	std::mutex lock_;
+	std::condition_variable cv_;
+	std::deque<bug_async_op_base*> ops_;
+	std::thread thd_;
+
+public:
+
+	void start() {
+		thd_ = std::thread(&bug_thread_executor::work_thd, this);
+	}
+
+	~bug_thread_executor() {
+		if (thd_.joinable())
+			thd_.join();
+	}
+
+	// although this implementation is not realy noexcept due to allocation but I have a real one that is and required to be noexcept
+	virtual void post(bug_async_op_base& op) noexcept override {
+		{
+			std::unique_lock<std::mutex> lock{ lock_ };
+			ops_.push_back(&op);
+		}
+		cv_.notify_all();
+	}
+
+	virtual void wait() noexcept override {
+		std::unique_lock<std::mutex> lock{ lock_ };
+		cv_.wait(lock, [this] { return ops_.empty(); });
+	}
+};
+
+// task and promise
+
+struct bug_final_suspend_notification {
+	virtual std::coroutine_handle<> get_waiter() = 0;
+};
+
+class bug_task;
+
+class bug_resume_waiter {
+public:
+	bug_resume_waiter(std::variant<std::coroutine_handle<>, bug_final_suspend_notification*> waiter) noexcept : waiter_{ waiter } {}
+
+	constexpr bool await_ready() const noexcept { return false; }
+
+	std::coroutine_handle<> await_suspend(std::coroutine_handle<>) noexcept {
+		return waiter_.index() == 0 ? std::get<0>(waiter_) : std::get<1>(waiter_)->get_waiter();
+	}
+
+	constexpr void await_resume() const noexcept {}
+
+private:
+	std::variant<std::coroutine_handle<>, bug_final_suspend_notification*> waiter_;
+};
+
+class bug_task_promise {
+	friend bug_task;
+public:
+
+	bug_task get_return_object() noexcept;
+
+	constexpr std::suspend_always initial_suspend() noexcept { return {}; }
+
+	bug_resume_waiter final_suspend() noexcept {
+		return bug_resume_waiter{ waiter_ };
+	}
+
+	void unhandled_exception() noexcept {
+		ex_ptr = std::current_exception();
+	}
+
+	constexpr void return_void() const noexcept {}
+
+	void get_result() const {
+		if (ex_ptr)
+			std::rethrow_exception(ex_ptr);
+	}
+
+	std::variant<std::monostate, std::exception_ptr> result_or_error() const noexcept {
+		if (ex_ptr)
+			return ex_ptr;
+		return {};
+	}
+
+private:
+	std::variant<std::coroutine_handle<>, bug_final_suspend_notification*> waiter_;
+	std::exception_ptr ex_ptr = nullptr;
+};
+
+class bug_task {
+	friend bug_task_promise;
+	using handle = std::coroutine_handle<>;
+	using promise_t = bug_task_promise;
+
+	bug_task(handle coro, promise_t* p) noexcept : this_coro{ coro }, this_promise{ p } {
+		//printf("task(%p) coroutine(%p) promise(%p)\n", this, this_coro.address(), this_promise);
+	}
+
+public:
+
+	using promise_type = bug_task_promise;
+
+	bug_task(bug_task&& other) noexcept
+		: this_coro{ std::exchange(other.this_coro, nullptr) }, this_promise{ std::exchange(other.this_promise, nullptr) } { 
+		printf("task(task&&: %p) coroutine(%p) promise(%p)\n", this, this_coro.address(), this_promise); 
+	}
+
+	~bug_task() {
+		if (this_coro) {
+			//printf("~task(%p) coroutine(%p) promise(%p)\n", this, this_coro.address(), this_promise);
+			this_coro.destroy();
+		}
+	}
+
+	constexpr bool await_ready() const noexcept {
+		return false;
+	}
+
+	handle await_suspend(handle waiter) noexcept {
+		assert(this_coro != nullptr && this_promise != nullptr);
+		this_promise->waiter_ = waiter;
+		return this_coro;
+	}
+
+	void await_resume() {
+		return this_promise->get_result();
+	}
+
+	bool is_valid() const noexcept {
+		return this_promise != nullptr && this_coro != nullptr;
+	}
+
+	void start_coro(bug_final_suspend_notification& w) noexcept {
+		assert(this_promise != nullptr && this_coro != nullptr);
+		this_promise->waiter_ = &w;
+		this_coro.resume(); // never throws since all exceptions are caught by the promise
+	}
+
+private:
+	handle this_coro;
+	promise_t* this_promise;
+};
+
+bug_task bug_task_promise::get_return_object() noexcept {
+	return { std::coroutine_handle<bug_task_promise>::from_promise(*this), this };
+}
+
+// spawn operation and spawner
+
+template<class Handler>
+class bug_spawn_op final : public bug_async_op_base, bug_final_suspend_notification {
+	Handler handler;
+	bug_task task_;
+
+public:
+
+	bug_spawn_op(Handler handler, bug_task&& t)
+		: handler { handler }, task_{ std::move(t) } {}
+
+	virtual void invoke_operation() override {
+		printf("starting the coroutine\n");
+		task_.start_coro(*this);
+		printf("started the coroutine\n");
+	}
+
+	virtual std::coroutine_handle<> get_waiter() override {
+                auto handler2 = std::move(handler);
+                delete this;
+		handler2();
+		return std::noop_coroutine();
+	}
+};
+
+struct dummy_spawn_handler_t {
+	constexpr void operator()() const noexcept {}
+};
+
+void bug_spawn(bug_any_executor& ex, bug_task&& t) {
+	using op_t = bug_spawn_op<dummy_spawn_handler_t>;
+	op_t* op = new op_t{ dummy_spawn_handler_t{}, std::move(t) };
+	ex.post(*op);
+}
+
+class bug_spawner;
+
+struct bug_spawner_awaiter {
+	bug_spawner& s;
+	std::coroutine_handle<> waiter;
+
+	bug_spawner_awaiter(bug_spawner& s) : s{ s } {}
+
+	bool await_ready() const noexcept;
+
+	void await_suspend(std::coroutine_handle<> coro);
+
+	void await_resume() {}
+};
+
+class bug_spawner {
+	friend bug_spawner_awaiter;
+
+	struct final_handler_t {
+		bug_spawner& s;
+
+		void operator()() {
+			s.on_spawn_finished();
+		}
+	};
+
+public:
+
+	bug_spawner(bug_any_executor& ex) : ex_{ ex } {}
+
+	void spawn(bug_task&& t) {
+		using op_t = bug_spawn_op<final_handler_t>;
+		// move task into ptr
+		op_t* ptr = new op_t(final_handler_t{ *this }, std::move(t));
+		++count_;
+		ex_.post(*ptr); // ptr escapes here thus task escapes but clang can't deduce that unless post() is not noexcept
+	}
+
+	bug_spawner_awaiter wait() noexcept { return { *this }; }
+
+	void on_spawn_finished()
+	{
+		if (!--count_ && awaiter_)
+		{
+			auto a = std::exchange(awaiter_, nullptr);
+			a->waiter.resume();
+		}
+	}
+
+private:
+
+	bug_any_executor& ex_; // if bug_thread_executor& is used instead enables clang to detect the escape of the promise
+	bug_spawner_awaiter* awaiter_ = nullptr;
+	std::atomic<std::size_t> count_ = 0;
+};
+
+bool bug_spawner_awaiter::await_ready() const noexcept {
+	return s.count_ == 0;
+}
+
+void bug_spawner_awaiter::await_suspend(std::coroutine_handle<> coro) {
+	waiter = coro;
+	s.awaiter_ = this;
+}
+
+template<std::invocable<bug_spawner&> Fn>
+bug_task scoped_spawn(bug_any_executor& ex, Fn fn) {
+	bug_spawner s{ ex };
+	std::exception_ptr ex_ptr;
+
+	try
+	{
+		fn(s);
+	}
+	catch (const std::exception& ex) // ex instead of ... to observe the address of ex
+	{
+		printf("caught an exception from fn(s): %p\n", std::addressof(ex));
+		ex_ptr = std::current_exception();
+	}
+
+	co_await s.wait();
+	if (ex_ptr)
+		std::rethrow_exception(ex_ptr);
+}
+
+// forked task to start the coroutine from sync code
+
+struct bug_forked_task_promise;
+
+class bug_forked_task {
+	friend struct bug_forked_task_promise;
+	bug_forked_task() = default;
+public:
+	using promise_type = bug_forked_task_promise;
+};
+
+struct bug_forked_task_promise {
+	bug_forked_task get_return_object() noexcept { return {}; }
+
+	constexpr std::suspend_never initial_suspend() noexcept { return {}; }
+
+	constexpr std::suspend_never final_suspend() noexcept { return {}; }
+
+	void unhandled_exception() noexcept {
+		std::terminate();
+	}
+
+	constexpr void return_void() const noexcept {}
+};
+
+// test case
+
+bug_task bug_spawned_task(int id, int inc, std::atomic<int>& n) {
+	int result = n += inc;
+	std::string msg = "count in coro (" + std::to_string(id) + ") = " + std::to_string(result);
+	printf("%s\n", msg.c_str());
+	co_return;
+}
+
+// using bug_thread_executor& instead of bug_any_executor& resolves the problem
+bug_forked_task run_coros(bug_any_executor& ex) {
+	std::atomic<int> count = 0;
+	auto throwing_fn = [&](bug_spawner& s) {
+		int frame_ptr = 0;
+		printf("frame ptr ptr: %p\n", std::addressof(frame_ptr));
+		s.spawn(bug_spawned_task(1, 2, count)); // the coroutine frame is allocated on the stack !
+		s.spawn(bug_spawned_task(2, 3, count));
+		s.spawn(bug_spawned_task(3, 5, count));
+                // commenting the following line hides the problem
+		throw std::runtime_error{ "catch this !" }; // on windows allocated on the stack as required by msvc c++ abi
+	};
+
+	try {
+		co_await scoped_spawn(ex, throwing_fn);
+	}
+	catch (const std::exception& ex) {
+		printf("scoped_spawn propagated exception: %s\n", ex.what());
+	}
+
+	printf("count after scoped_spawn: %d\n", count.load());
+}
+
+
+int main() {
+	int var = 0;
+	bug_thread_executor ex;
+	printf("stack address: %p\n", std::addressof(var));
+	run_coros(ex);
+	ex.start();
+	ex.wait();
+	return 0;
+}
+```
+the run `./corobug` and you will get something like this `AddressSanitizer: stack-use-after-return on address 0x7fb1ba9f9338 at pc 0x7fb1bd4d3b58 bp 0x7fb1ba1efd40 sp 0x7fb1ba1efd38`
+without the address sanitizer a segfault is received.`
+
+
+---
+
+# 84
+### compiler : `LLVM`
+### title : `NTTP of structural class types pass values literally when used directly (should: invoke copy constructors) in Clang 15 (C++)`
+### open_at : `2022-12-26T02:40:12Z`
+### link : https://github.com/llvm/llvm-project/issues/59699
+### status : `open`
+### tags : `c++20, clang:frontend, `
+### content : 
+The Clang C++ compiler produces the wrong output for the following valid C++20 source code:
+    
+```c++
+/*
+ * @author{Jelle Hellings}.
+ */
+#include <iostream>
+#include <functional>
+
+
+/*
+ * A function object that returns the input.
+ */
+constexpr static inline std::identity id = {};
+
+
+/*
+ * A structural class type that keeps track of copies: if a value of this type
+ * with copy count @{copy_count} is copied, then the resulting copy will have a
+ * copy count of @{copy_count + 1}.
+ */
+struct copy_counter
+{
+    /* The copy count. */
+    unsigned copy_count;
+
+
+    /*
+     * Create a copy counter: start at zero by default.
+     */
+    constexpr copy_counter(unsigned init = 0u) noexcept : copy_count{init} {}
+
+    /*
+     * The copy constructor: increases the count by one.
+     */
+    constexpr copy_counter(const copy_counter& other) noexcept :
+            copy_count(other.copy_count + 1u) {}
+};
+
+
+/*
+ * A template that takes a copy counter @{C} as a non-type template parameter
+ * and prints it to standard output. In addition, print the expected value
+ * provided by @{expected}.
+ */
+template<copy_counter C>
+void print_nttp(const auto& expected)
+{
+    std::cout << C.copy_count
+              << " (expected: " << expected.copy_count << ")" << std::endl;
+}
+
+
+/*
+ * A template that takes a copy counter @{C} as a non-type template parameter
+ * and passes it to the above print function in a few different ways.
+ */
+template<copy_counter C>
+void test_cases()
+{
+    constexpr const copy_counter D = {C.copy_count};
+    static_assert(C.copy_count == D.copy_count);
+
+    print_nttp<C>(static_cast<copy_counter>(C));
+    print_nttp<D>(static_cast<copy_counter>(D));
+    print_nttp<(C)>(static_cast<copy_counter>((C)));
+    print_nttp<(C, C)>(static_cast<copy_counter>((C, C)));
+    print_nttp<id(C)>(static_cast<copy_counter>(id(C)));
+    print_nttp<copy_counter{C}>(static_cast<copy_counter>(copy_counter{C}));
+}
+
+
+/*
+ * Entry-point of the program.
+ */
+int main()
+{
+    test_cases<copy_counter{}>();
+}
+```
+
+We have used both the Clang C++ compiler 15.0.1 of Visual Studio 17.4.3 and the x86-64 Clang 15.0.0 compiler  (with `-std=c++20` and `-std=c++2b`) on Compiler Explorer.
+
+According to the C++20 standard, the above code should output:
+```console
+1 (expected: 1)
+1 (expected: 1)
+1 (expected: 1)
+1 (expected: 1)
+1 (expected: 1)
+1 (expected: 1)
+```
+
+When compiled with both versions of Clang we tried, the above code _incorrectly_ outputs:
+```console
+0 (expected: 1)
+1 (expected: 1)
+0 (expected: 1)
+1 (expected: 1)
+1 (expected: 1)
+1 (expected: 1)
+```
+
+Note specifically that Clang currently generates different instantiations of `print_nttp` even in cases where _identical_ template arguments are provided (the first two cases).
+
+We refer to the article https://jhellings.nl/article?articleid=1 for a full analysis of what this program should do. In short:
+
+Clause 8 in Section [temp.param] of the C++ standard says:
+
+> An id-expression naming a non-type template-parameter of class type T denotes a static storage duration object of type const T known as a template parameter object, whose value is that of the corresponding template argument after it has been converted to the type of the template-parameter. ...
+    
+In this case, a conversion of an expression e used as a template argument to type copy_counter will _always_ invoke the copy-constructor, the result of which can be verified via static_cast<copy_counter>(e) according to Clause 1 of Section [expr.static.ast] (The result of the expression static_cast<T>(v) is the result of converting the expression v to type T. ... )
+
+
+---
+
+
+# 85
+### compiler : `LLVM`
+### title : `Miscompilation with noalias and pointer equality`
+### open_at : `2022-12-23T16:50:18Z`
+### link : https://github.com/llvm/llvm-project/issues/59679
+### status : `open`
+### tags : `miscompilation, `
+### content : 
+Reproducer
+
+https://godbolt.org/z/h3zvvxbfE
+
+```c
+// test.c
+#include <stdio.h>
+
+int x;
+
+__attribute__((noinline))
+int test(int * restrict ptr) {
+    *ptr = 1;
+    if (ptr == &x) {
+        *ptr = 2;
+    }
+    return *ptr;
+}
+
+int main() {
+    printf("%d\n", test(&x));
+}
+```
+```
+$ clang -O3  test.c
+$ ./a.out
+1
+```
+Tested with clang 15.0.0 and trunk
+
+The issue appears to be that Clang's constant propagation replaces `*ptr = 2` with `x = 2`, which breaks the noalias *based on* analysis and allows the `return *ptr` to be simplified to `return 1`.
+
+
+---
+
+
+# 86
+### compiler : `LLVM`
+### title : `[LoopVectorizePass] Miscompilation of default vectorization vs no vectorization`
+### open_at : `2022-12-22T01:26:55Z`
+### link : https://github.com/llvm/llvm-project/issues/59650
+### status : `closed`
+### tags : `miscompilation, vectorization, `
+### content : 
+https://gcc.godbolt.org/z/4dfjo4z8v
+
+Correct result is 0 0 0 0. Clang-15 started to have 0 3 0 0 which is miscompilation.
+
+We bisected it to https://github.com/llvm/llvm-project/commit/cedfd7a2e536d2ff6da44e89a024baa402dc3e58, adding @fhahn who is the author of the change
+
+Code:
+
+compile flags `-O3 -msse4.2`
+
+```cpp
+#include <optional>
+#include <string>
+#include <string_view>
+#include <iostream>
+
+__attribute__((always_inline)) static inline unsigned char constant_time_ge_8(unsigned int a, unsigned int b) {
+  return ~(((unsigned int)(a - b)) >> 15);
+}
+
+__attribute__((noinline)) unsigned char CheckPadding(unsigned char *data, unsigned int length)
+{
+    unsigned int padding_length = data[length - 1];
+    unsigned char res = 0;
+
+    for (unsigned int i = 0; i < length - 1; i++) {
+        unsigned char mask = constant_time_ge_8(padding_length, i);
+        unsigned char b = data[length - 1 - i];
+        res |= mask & (padding_length ^ b);
+    }
+
+    return res;
+}
+
+__attribute__((noinline)) unsigned char CheckPaddingNoVec(unsigned char *data, unsigned int length)
+{
+    unsigned int padding_length = data[length - 1];
+    unsigned char res = 0;
+
+#pragma clang loop vectorize(disable)
+    for (unsigned int i = 0; i < length - 1; i++) {
+        unsigned char mask = constant_time_ge_8(padding_length, i);
+        unsigned char b = data[length - 1 - i];
+        res |= mask & (padding_length ^ b);
+    }
+
+    return res;
+}
+
+__attribute__((aligned(16))) unsigned char data_length41[41] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x03, 0x03};
+
+__attribute__((aligned(16))) unsigned char data_length40[40] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x03, 0x03};
+
+int main() {
+    std::cout << (int)CheckPadding(data_length40, sizeof(data_length40)) << std::endl;
+    std::cout << (int)CheckPadding(data_length41, sizeof(data_length41)) << std::endl;
+    std::cout << (int)CheckPaddingNoVec(data_length40, sizeof(data_length40)) << std::endl;
+    std::cout << (int)CheckPaddingNoVec(data_length41, sizeof(data_length41)) << std::endl;
+}
+```
+
+If we apply back
+
+```diff
+--- a/llvm-project/llvm/lib/Transforms/Vectorize/VPlanTransforms.cpp
++++ b/llvm-project/llvm/lib/Transforms/Vectorize/VPlanTransforms.cpp
+@@ -419,7 +419,12 @@ void VPlanTransforms::optimizeInductions
+ 
+     VPScalarIVStepsRecipe *Steps = new VPScalarIVStepsRecipe(ID, BaseIV, Step);
+     HeaderVPBB->insert(Steps, IP);
+-
++    // If there are no vector users of IV, simply update all users to use Step
++    // instead.
++    if (!WideIV->needsVectorIV()) {
++      WideIV->replaceAllUsesWith(Steps);
++      continue;
++    }
+     // Update scalar users of IV to use Step instead. Use SetVector to ensure
+     // the list of users doesn't contain duplicates.
+     SetVector<VPUser *> Users(WideIV->user_begin(), WideIV->user_end());
+```
+
+Then it passes
+
+
+---
+
+# 87
+### compiler : `LLVM`
+### title : `Incorrect sign-extension of load's index generated on armv8 under UBSAN`
+### open_at : `2022-12-21T02:31:38Z`
+### link : https://github.com/llvm/llvm-project/issues/59630
+### status : `closed`
+### tags : `llvm:optimizations, `
+### content : 
+Compiling the following on armv8 with `-fsanitize=undefined` results in a UBSan complaint:
+```cpp
+#include <cstdint>
+
+int main(){
+  uint8_t n = 128;
+  void *ptrs[200];
+  ptrs[(int)n];
+  return 0;
+}
+```
+
+Which reports:
+```console
+test.cpp:6:3: runtime error: index -128 out of bounds for type 'void *[200]'
+SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior test.cpp:6:3 in
+```
+
+I believe there is a signed byte load being incorrectly generated instead of an unsigned load in this case, and the resulting sign extension results in an overflow that ubsan detects: https://godbolt.org/z/7Y3f7oxGs
+
+Changing the cast from `(int)` to `(unsigned)` appears to hide the issue.
 
 
 ---
