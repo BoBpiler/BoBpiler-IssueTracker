@@ -66,6 +66,42 @@
 48. [Miscompilation with noalias and pointer equality (컴파일러 버그)](#85)
 48. [[LoopVectorizePass] Miscompilation of default vectorization vs no vectorization (컴파일러 버그)](#86)
 48. [Incorrect sign-extension of load's index generated on armv8 under UBSAN (컴파일러 버그)](#87)
+48. [miscompilation? with 3010f60381bcd828d1b409cfaa576328bcd05bbc on RISCV (컴파일러 버그)](#88)
+48. [clang-cl 32 bit vectorcall doesn't match msvc 32 bit vectorcall (벡터화 컴파일러 버그)](#89)
+48. [structure alignment seems broken when targeting windows (컴파일러 버그)](#90)
+48. [Potential miscompilation for m2. (컴파일러 버그)](#91)
+48. [Miscompile with -fglobal-isel, -ftrivial-auto-var-init=pattern, and thinlto (크로미움과 관련된 버그)](#92)
+48. [Passing pointer to a local variable prevents TCO (최적화 누락)](#93)
+48. [Trivially Default Constructible with `requires` + Structure Wrapping (컴파일러 버그)](#95)
+48. [coroutines: miscompilation when using ternary operator and co_await (use after free) (코루틴 UAF 컴파일러 버그)](#96)
+48. [clang trunk at -O2/3 misses a global-buffer-overflow (컴파일러 버그)](#97)
+48. [Bad codegen after 8adfa29706e (NaN constant folding weirdness) (컴파일러 버그)](#98)
+48. [Static array indices in function parameter declarations cause poor SIMD code-generation (웹어셈블리 컴파일러 버그)](#99)
+48. [Incorrect codegen for unaligned load/store (ARM NEON) (컴파일러 버그)](#100)
+48. [Poor code when a pointer is a global var, but good code for static or local var (컴파일러 버그)](#101)
+48. [Incorrect codegen for int128 parameters with x64-systemv calling conv (컴파일러 버그)](#102)
+48. [C, C11 and later: padding not set to “zero bits” in compound literal (컴파일러 버그)](#103)
+48. [Constant tracking foiled by an escaping reference (컴파일러 버그, 두번 free되는 느낌?)](#104)
+48. [[avr] Return values are promoted to (unsigned) int for no reason. (unsigned로 승격되는 컴파일러 버그)](#105)
+48. [Friended struct with concept gives different output in clang/gcc/MSVC (컴파일러 버그)](#106)
+48. [`__attribute__((pure))`/`__attribute__((const))` is a massive unchecked footgun (컴파일러 버그, 뭔가 clang이 예외 관련해서 착각하고있어 여러 개발자가 같이 문제를 해결해야함)](#107)
+48. [The preferred global deallocation for the array whose element is of class type with non-trival destructor (컴파일러 버그)](#108)
+48. [wrong code at -O1 and above (컴파일러 버그)](#109)
+48. [Infinite self-recursion for functions renamed with __asm__, combined with inline specialization of it (컴파일러 버그)](#110)
+48. [Miscompilation on i686 windows with opaque pointers + LTO (컴파일러  버그)](#111)
+48. [Invalid object passed to coroutine's await_transform (윈도우 코루틴 버그)](#112)
+48. [`rbp` clobber in inline assembly is not respected for functions with a frame pointer (백도어로 활용 가능할지도 ?? gcc에서는 컴파일 오류)](#113)
+48. [Clang choosing copy constructor over initializer_list (컴파일러 버그)](#114)
+48. [[coroutines] incorrect transformation removes co_await side effects in non-taken branch (코루틴 컴파일러 버그)](#115)
+48. [Wrong code at -Os on x86_64-linux_gnu (LoopFlattenPass) (컴파일러 버그)](#116)
+48. [`-fno-semantic-interposition` breaks code relying on address uniqueness of a function (컴파일러 버그)](#117)
+48. [clang: x86 stdcall/thiscall with an empty object parameter yields ABI-incompatible code (컴파일러 버그)](#118)
+48. [Wrong code at -Os on x86_64-linux_gnu (컴파일러 버그)](#119)
+48. [Clang accepts invalid narrowing conversion (컴파일러 버그)](#120)
+48. [](#121)
+48. [](#)
+48. [](#)
+48. [](#)
 48. [](#)
 48. [](#)
 48. [](#)
@@ -92,6 +128,7 @@
 44. [clang: concept checking bug in out-of-line definitions of inner class member functions (컴파일 실패)](#59)
 45. [Clang cannot use _Atomic qualified integer type as controlling expression in switch statement (컴파일 실패)](#60)
 46. [Clang and GCC differ in instantiation strategy of constexpr and incomplete types (컴파일 실패)](#77)
+48. [[coroutines] miscompilation in clang 16 trunk vs clang 15 (컴파일 실패 인듯 ?)](#94)
 46. [](#)
 46. [](#)
 46. [](#)
@@ -6227,6 +6264,1900 @@ SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior test.cpp:6:3 in
 I believe there is a signed byte load being incorrectly generated instead of an unsigned load in this case, and the resulting sign extension results in an overflow that ubsan detects: https://godbolt.org/z/7Y3f7oxGs
 
 Changing the cast from `(int)` to `(unsigned)` appears to hide the issue.
+
+
+---
+
+# 88
+### compiler : `LLVM`
+### title : `miscompilation? with 3010f60381bcd828d1b409cfaa576328bcd05bbc on RISCV`
+### open_at : `2022-12-19T16:45:12Z`
+### link : https://github.com/llvm/llvm-project/issues/59594
+### status : `closed`
+### tags : `llvm:codegen, regression, miscompilation, `
+### content : 
+With 3010f60381bcd828d1b409cfaa576328bcd05bbc the following code seems to yield unexpected results:
+
+https://godbolt.org/z/vKTPrxWrb
+
+```c
+void Fill(unsigned char* buffer, int n) {
+  for (int i = 0; i < n; i++)
+    buffer[i] = (i & 0xff);
+}
+```
+
+This behavioural change only appears on optimized builds with the v extension).
+
+BB2 seems to loose the advancement of the indicies value (`vadd.vx v8, v8, a3`).
+
+Before:
+```asm
+_Z4FillPhi:
+        blez    a1, .LBB0_3
+        li      a2, 0
+        csrr    a3, vlenb
+        add     a4, a3, a1
+        addi    a4, a4, -1
+        neg     a5, a3
+        and     a4, a4, a5
+        vsetvli a5, zero, e8, m1, ta, ma
+        vid.v   v8
+        vsetvli zero, zero, e64, m8, ta, ma
+        vid.v   v16
+.LBB0_2:
+        vsetvli zero, zero, e64, m8, ta, ma
+        vsaddu.vx       v24, v16, a2
+        vmsltu.vx       v0, v24, a1
+        add     a5, a0, a2
+        vse8.v  v8, (a5), v0.t
+        add     a2, a2, a3
+        vsetvli zero, zero, e8, m1, ta, ma
+        vadd.vx v8, v8, a3
+        bne     a4, a2, .LBB0_2
+.LBB0_3:
+        ret
+.Lfunc_end0:
+        .size   _Z4FillPhi, .Lfunc_end0-_Z4FillPhi
+```
+
+After:
+```asm
+_Z4FillPhi:
+        blez    a1, .LBB0_3
+        li      a2, 0
+        csrr    a3, vlenb
+        add     a4, a3, a1
+        addi    a4, a4, -1
+        neg     a5, a3
+        and     a4, a4, a5
+        vsetvli a5, zero, e8, m1, ta, ma
+        vid.v   v8
+        vsetvli zero, zero, e64, m8, ta, ma
+        vid.v   v16
+.LBB0_2:
+        vsaddu.vx       v24, v16, a2
+        vmsltu.vx       v0, v24, a1
+        add     a5, a0, a2
+        add     a2, a2, a3
+        vse8.v  v8, (a5), v0.t
+        bne     a4, a2, .LBB0_2
+.LBB0_3:
+        ret
+.Lfunc_end0:
+        .size   _Z4FillPhi, .Lfunc_end0-_Z4FillPhi
+```
+
+The removals of the `vsetvli` should be harmless as the vtype is not changing (questionable if it is correct due to the tail handling, but lets ignore that).  The `add a2, a2, a3` is being scheduled differently but that should be save as the `vse8.v` is not impacted by that.  At that point, the only difference is the `vadd.vx v8, v8, a3`, where `a3` is `vlenb` which would be the stride, and thus is simply forwarding the index base by the stride which is being unrolled here through the vector unit.
+
+
+---
+
+# 89
+### compiler : `LLVM`
+### title : `clang-cl 32 bit vectorcall doesn't match msvc 32 bit vectorcall`
+### open_at : `2022-12-16T22:01:05Z`
+### link : https://github.com/llvm/llvm-project/issues/59561
+### status : `open`
+### tags : `backend:X86, clang:codegen, ABI, `
+### content : 
+I got an abi incompatibility between msvc and clang on i686-pc-windows-msvc target using version 15.0.6.
+
+Take this function:
+```cpp
+float __vectorcall test(
+    int ecx, int edx, float xmm0, float xmm1, float xmm2, float xmm3, float xmm4, float xmm5,
+    int stack1, float stack2, int stack3
+) {
+    return stack2;
+}
+```
+
+In msvc the `stack2` parameter is passed by value, but in clang it is passed by reference. [Godbolt link](https://godbolt.org/z/Gj4Y4WdY3)
+
+The definition for [__vectorcall from Microsoft Docs](https://learn.microsoft.com/en-us/cpp/cpp/vectorcall?view=msvc-170) actually say "seventh and subsequent vector type arguments are passed on the stack by reference to memory allocated by the caller" for x86, but msvc itself does not follow this and passes by value instead.  Msvc only seems to pass by value if the argument is float or double (edit: and long double) but not the other vector types like __m128. `
+
+
+---
+
+# 90
+### compiler : `LLVM`
+### title : `structure alignment seems broken when targeting windows`
+### open_at : `2022-12-13T02:16:45Z`
+### link : https://github.com/llvm/llvm-project/issues/59486
+### status : `open`
+### tags : `clang:codegen, ABI, `
+### content : 
+When I put a 16-byte, 4 byte aligned field in a structure, the structure becomes 16 byte aligned. This only happens when the target is `x86_64-pc-windows` (i.e. it does not happen on `x86_64-pc`). It seems to have started in Clang 3.6.
+```cpp
+typedef __attribute__((__ext_vector_type__(4),__aligned__(4))) float V;
+static_assert(alignof(V)==4, "?");
+
+struct S {
+	V	v;
+};
+static_assert(alignof(S)==4, "?");
+```
+gives
+```console
+error: static assertion failed due to requirement 'alignof(S) == 4': ?
+```
+
+
+---
+
+# 91
+### compiler : `LLVM`
+### title : `Potential miscompilation for m2.`
+### open_at : `2022-12-12T22:25:30Z`
+### link : https://github.com/llvm/llvm-project/issues/59483
+### status : `closed`
+### tags : `llvm:optimizations, `
+### content : 
+Hi
+
+This function gives different results with 03 and without (for a sertain combination of options).
+I believe that O3 version is incorrect.
+
+```cpp
+std::pair<int, int> get_mask(uint8x8_t a) {
+    a = vand_u8(a, vdup_n_u64(0x8080898983838181));
+    auto desc = vaddv_u16(vpaddl_u8(a));
+    return { desc & 0x1f, desc >> 7};
+}
+```
+
+Complete test case with options to reproduce
+
+https://gist.github.com/DenisYaroshevskiy/85ec7af1d4f283bdb579ae2f49c3284e
+
+
+<details><summary>전체 코드</summary>
+<p>
+
+</p>
+</details>
+
+
+---
+
+# 92
+### compiler : `LLVM`
+### title : `Miscompile with -fglobal-isel, -ftrivial-auto-var-init=pattern, and thinlto`
+### open_at : `2022-12-07T17:22:52Z`
+### link : https://github.com/llvm/llvm-project/issues/59376
+### status : `closed`
+### tags : `miscompilation, llvm:globalisel, LTO, `
+### content : 
+Repro:
+
+1. Download and gunzip attachment at https://bugs.chromium.org/p/chromium/issues/detail?id=1383873#c53
+2.
+```shell
+bin/clang++ -fno-delete-null-pointer-checks -fno-ident -fno-strict-aliasing -fstack-protector -fcolor-diagnostics -fmerge-all-constants -ffp-contract=off -flto=thin -fsplit-lto-unit -fwhole-program-vtables -fcomplete-member-pointers -arch arm64 -ffile-compilation-dir=. -no-canonical-prefixes -ftrivial-auto-var-init=pattern -fno-omit-frame-pointer -mmacos-version-min=10.13 -O2 -std=c++20 -fno-exceptions -fno-rtti repro.ii -shared -o librepro.dylib -fuse-ld=lld -Wl,-undefined,dynamic_lookup -w -isysroot $(xcrun -show-sdk-path) -fno-global-isel
+```
+3.
+```shell
+bin/clang++ -fno-delete-null-pointer-checks -fno-ident -fno-strict-aliasing -fstack-protector -fcolor-diagnostics -fmerge-all-constants -ffp-contract=off -flto=thin -fsplit-lto-unit -fwhole-program-vtables -fcomplete-member-pointers -arch arm64 -ffile-compilation-dir=. -no-canonical-prefixes -ftrivial-auto-var-init=pattern -fno-omit-frame-pointer -mmacos-version-min=10.13 -O2 -std=c++20 -fno-exceptions -fno-rtti repro.ii -shared -o librepro.dylib -fuse-ld=lld -Wl,-undefined,dynamic_lookup -w -isysroot $(xcrun -show-sdk-path) -fglobal-isel
+```
+4. Compare disassembly for function `__ZN5blink22NGFragmentItemsBuilder17ConvertToPhysicalERKNS_12PhysicalSizeE`
+
+(The only difference between commands 2 and 3 is `-fno-global-isel` vs `-fglobal-isel`.)
+
+The good dylib has this sequence:
+
+```console
+% otool -tV librepro.good.dylib | rg -A 233 __ZN5blink22NGFragmentItemsBuilder17ConvertToPhysicalERKNS_12PhysicalSizeE: | rg -A 3 csinc
+0000000000002f80	csinc	w8, w8, wzr, ne
+0000000000002f84	strh	w8, [sp, #0x38]
+0000000000002f88	str	wzr, [sp, #0x40]
+0000000000002f8c	ldr	x0, [x24]
+```
+
+The bad dylib has this sequence:
+
+```console
+% otool -tV librepro.bad.dylib | rg -A 233 __ZN5blink22NGFragmentItemsBuilder17ConvertToPhysicalERKNS_12PhysicalSizeE: | rg -A 3 csinc
+0000000000003110	csinc	w8, w8, wzr, ne
+0000000000003114	strh	w8, [sp, #0x30]
+0000000000003118	mov	w9, #-0x55555556
+000000000000311c	str	x9, [sp, #0x30]
+```
+
+In the bad dylib, we store something to `sp+0x30`, and then clobber it with `0xaaaaaaaa` (the `-ftrivial-auto-var-init=pattern` pattern) immediately.
+
+This is reduced from https://crbug.com/1383873
+
+
+---
+
+# 93
+### compiler : `LLVM`
+### title : `Passing pointer to a local variable prevents TCO`
+### open_at : `2022-11-29T23:10:18Z`
+### link : https://github.com/llvm/llvm-project/issues/59256
+### status : `open`
+### tags : `llvm:optimizations, `
+### content : 
+LLVM optimisation passes fail to convert a tail recursive function into a loop when a stack allocated variable is passed by reference into another function and then falls out of scope before the function recurses.
+
+```cpp
+
+void s(int&);
+
+void foo() {
+    {
+        int i;
+        s(i);
+    }
+    foo();
+}
+
+```
+
+https://godbolt.org/z/1h3o3sMj4
+
+
+---
+
+# 94
+### compiler : `LLVM`
+### title : `[coroutines] miscompilation in clang 16 trunk vs clang 15`
+### open_at : `2022-11-27T21:29:58Z`
+### link : https://github.com/llvm/llvm-project/issues/59221
+### status : `closed`
+### tags : `miscompilation, llvm:optimizations, coroutines, `
+### content : 
+I was experimenting with coroutines and symmetric transfer. 
+
+https://compiler-explorer.com/z/457fqjbG8
+
+I expected the coroutine to return 42 instead some random garbage.  Or at least 123 which is set when promise is created, it seems that optimiser is too eager. Other compilers (GCC and MSVC) are correcting expected value.
+
+For some reason it optimises away ASM lines 17 & 18 which contains `return_value` function.
+
+Commit of the clang 16 is `bf0bd85f9d823216501dcc09ae5461c2cf633ccf`
+
+
+
+---
+
+# 95
+### compiler : `LLVM`
+### title : `Trivially Default Constructible with `requires` + Structure Wrapping`
+### open_at : `2022-11-25T21:57:40Z`
+### link : https://github.com/llvm/llvm-project/issues/59206
+### status : `open`
+### tags : `c++20, clang:frontend, ABI, concepts, `
+### content : 
+Consider the following semi-minimal example:
+```cpp
+//Compile with -std=c++20
+
+#include <type_traits>
+
+template<int n>
+struct Foo {
+	constexpr Foo() = default;
+
+	template<class... Ts>
+	Foo(Ts... vals) requires(sizeof...(Ts)==n) {}
+};
+
+struct Bar {
+	Foo<4> foo;
+};
+
+static_assert(std::is_trivially_default_constructible_v< Foo<4> >); //Fine
+static_assert(std::is_trivially_default_constructible_v< Bar    >); //Fails???
+```
+The first `static_assert` passes, indicating that `Foo<4>` is trivially default constructible. However, we now wrap `Foo<4>` in a class `Bar` which does nothing, and suddenly the type is no longer trivially default constructible and the second `static_assert` fails:
+
+```console
+<source>:18:1: error: static assertion failed due to requirement 'std::is_trivially_default_constructible_v<Bar>'
+static_assert(std::is_trivially_default_constructible_v< Bar    >);
+^             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+Compiler returned: 1
+```
+
+I believe that this is incorrect behavior. We can verify that `Foo<4>` is indeed trivially default-constructible per [the definition](https://en.cppreference.com/w/cpp/language/default_constructor#Trivial_default_constructor), and of course by the `static_assert` passing. Even if `Foo<4>` didn't fully constrain the constructors, the non-templated defaulted constructor should be selected preferentially. Next, wrapping `Foo<4>` in `Bar` should do nothing; if anything it should ensure that *only* the default constructor is accessible. And finally, GCC, MSVC, and even Intel Compiler (now based on LLVM) accept this code without complaint.
+
+The tested version:
+
+```console
+clang version 16.0.0 (https://github.com/llvm/llvm-project.git 437ccf5af9c2aec915a68a164a95d506fbac2324)
+```
+
+Note that this is a regression. E.g. Clang 15 accepts the code.`
+
+
+---
+
+# 96
+### compiler : `LLVM`
+### title : `coroutines: miscompilation when using ternary operator and co_await (use after free)`
+### open_at : `2022-11-24T01:37:10Z`
+### link : https://github.com/llvm/llvm-project/issues/59181
+### status : `closed`
+### tags : `miscompilation, coroutines, `
+### content : 
+https://godbolt.org/z/avrxq5zb9
+
+```cpp
+res ok(bool cond) {
+    if (cond) {
+        co_return res{co_await foo_error()};
+    } else {
+        co_return res{5};
+    }
+}
+
+res notok(bool cond) {
+    co_return cond ? res{co_await foo_error()} : res{5};
+}
+
+int main() {
+    ok(false);    //ok
+    ok(true);     //ok
+    notok(false); //ok
+    notok(true);  //crash
+}
+```
+
+results in:
+```bash
+=================================================================
+==1==ERROR: AddressSanitizer: heap-use-after-free on address 0x6070000001ae at pc 0x5555f4f0091e bp 0x7fff81013350 sp 0x7fff81013348
+READ of size 1 at 0x6070000001ae thread T0
+    #0 0x5555f4f0091d in notok(bool) /app/example.cpp:104:26
+    #1 0x5555f4f013e5 in main /app/example.cpp:111:5
+    #2 0x7f9da9a28082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+    #3 0x5555f4e2739d in _start (/app/output.s+0x1f39d)
+
+0x6070000001ae is located 62 bytes inside of 72-byte region [0x607000000170,0x6070000001b8)
+freed by thread T0 here:
+    #0 0x5555f4efd30d in operator delete(void*) /root/llvm-project/compiler-rt/lib/asan/asan_new_delete.cpp:152:3
+    #1 0x5555f4f05442 in notok(bool) (.destroy) /app/example.cpp:103:5
+    #2 0x5555f4f0a8f4 in std::__1::coroutine_handle<void>::destroy[abi:v160000]() const /opt/compiler-explorer/clang-trunk-20221123/bin/../include/c++/v1/__coroutine/coroutine_handle.h:84:9
+    #3 0x5555f4f07554 in res_promise_type::await_transform(res)::Suspension::await_suspend(std::__1::coroutine_handle<void>) /app/example.cpp:73:22
+    #4 0x5555f4f008da in notok(bool) /app/example.cpp:104:26
+    #5 0x5555f4f013e5 in main /app/example.cpp:111:5
+    #6 0x7f9da9a28082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+previously allocated by thread T0 here:
+    #0 0x5555f4efcaad in operator new(unsigned long) /root/llvm-project/compiler-rt/lib/asan/asan_new_delete.cpp:95:3
+    #1 0x5555f4f00017 in notok(bool) /app/example.cpp:103:5
+    #2 0x5555f4f013e5 in main /app/example.cpp:111:5
+    #3 0x7f9da9a28082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+SUMMARY: AddressSanitizer: heap-use-after-free /app/example.cpp:104:26 in notok(bool)
+Shadow bytes around the buggy address:
+  0x606fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x606fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x607000000000: fa fa fa fa fd fd fd fd fd fd fd fd fd fa fa fa
+  0x607000000080: fa fa fd fd fd fd fd fd fd fd fd fa fa fa fa fa
+  0x607000000100: fd fd fd fd fd fd fd fd fd fa fa fa fa fa fd fd
+=>0x607000000180: fd fd fd fd fd[fd]fd fa fa fa fa fa fa fa fa fa
+  0x607000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x607000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x607000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x607000000380: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x607000000400: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==1==ABORTING
+```
+
+
+---
+
+# 97
+### compiler : `LLVM`
+### title : `clang trunk at -O2/3 misses a global-buffer-overflow`
+### open_at : `2022-11-23T17:20:30Z`
+### link : https://github.com/llvm/llvm-project/issues/59169
+### status : `open`
+### tags : `compiler-rt:asan, llvm:optimizations, `
+### content : 
+For the following code, `clang-trunk -O2 -fsanitize=address` (or `-O3`) misses the global-buffer-overflow, while `clang-trunk -Ox -fsanitize=address` (x=0,1, or s) can detect it.
+
+GCC can detect it at all optimization levels.
+
+The overflow happens at ` a=a+2; i[0]; *a=1`, which overflows variable `c`. I checked the assembly code of `-O2/3`, which did not optimize away these codes. I believe this should be a sanitizer implementation bug.
+
+I have reported a few other sanitizer implementation issues to GCC team (an example: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106558) and they confirmed and fixed these bugs. 
+Such issues caused ASAN to miss certain kinds of bugs and may lead to false negatives in practice. ASAN and other sanitizers are extremely popular and have been widely used to find security flaws in many critical software, I believe such issues should be properly handled to avoid missing of bugs.
+
+Compiler explorer: https://godbolt.org/z/nvhM4j9h6
+
+```cpp
+% cat .c
+struct {
+  short b
+}  g, i[8];
+int c;
+unsigned j;
+int o() {
+  int *a = &c;
+  for (j=-9; j > 0; j = j + 1) {
+    a = a + 2;
+    i[0];
+    *a = 1;
+  }
+  return *a;
+}
+int main() { 
+  int a = o(); 
+  __builtin_printf("a=%d\n", a);
+}
+% clang-tk -O2 -fsanitize=address a.c && ./a.out
+a=1
+%
+% clang-tk -O1 -fsanitize=address a.c && ./a.out
+=================================================================
+==1==ERROR: AddressSanitizer: global-buffer-overflow on address 0x55a65d87c668 at pc 0x55a65ccf31d8 bp 0x7fff997c47b0 sp 0x7fff997c47a8
+WRITE of size 4 at 0x55a65d87c668 thread T0
+    #0 0x55a65ccf31d7 in o /app/a.c:11:8
+    #1 0x55a65ccf31d7 in main /app/a.c:16:11
+    #2 0x7f11300e8082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+    #3 0x55a65cc1da4d in _start (/app/output.s+0x1da4d)
+
+0x55a65d87c668 is located 56 bytes before global variable 'i' defined in '/app/example.c:3' (0x55a65d87c6a0) of size 16
+0x55a65d87c668 is located 24 bytes before global variable 'j' defined in '/app/example.c:5' (0x55a65d87c680) of size 4
+0x55a65d87c668 is located 4 bytes after global variable 'c' defined in '/app/example.c:4' (0x55a65d87c660) of size 4
+SUMMARY: AddressSanitizer: global-buffer-overflow /app/example.c:11:8 in o
+Shadow bytes around the buggy address:
+  0x55a65d87c380: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x55a65d87c400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x55a65d87c480: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x55a65d87c500: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x55a65d87c580: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x55a65d87c600: 00 00 00 00 00 00 00 00 00 00 00 00 04[f9]f9 f9
+  0x55a65d87c680: 04 f9 f9 f9 00 00 f9 f9 02 f9 f9 f9 00 00 00 00
+  0x55a65d87c700: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x55a65d87c780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x55a65d87c800: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x55a65d87c880: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==1==ABORTING
+%
+```
+
+
+---
+
+# 98
+### compiler : `LLVM`
+### title : `Bad codegen after 8adfa29706e (NaN constant folding weirdness)`
+### open_at : `2022-11-22T05:02:10Z`
+### link : https://github.com/llvm/llvm-project/issues/59122
+### status : `closed`
+### tags : `regression, miscompilation, llvm:optimizations, incomplete, `
+### content : 
+We have an internal test that recently started to fail which I bisected back to 8adfa29706e5407b62a4726e2172894e0dfdc1e8.
+
+I was able to reduce the test a little bit to the following:
+```c++
+extern "C" void printf(...);
+typedef float __m128 __attribute__((__vector_size__(16)));
+typedef int __v8su __attribute__((__vector_size__(32)));
+typedef float __m256 __attribute__((__vector_size__(32)));
+__m256 _mm256_max_ps___b, _mm256_hadd_ps___b, _mm256_hsub_ps___b,
+    test89___trans_tmp_15, test89___trans_tmp_14, test89___trans_tmp_13,
+    test89___trans_tmp_12, test89___trans_tmp_11, test89___trans_tmp_10,
+    test89___trans_tmp_8, test89___trans_tmp_7, test89___trans_tmp_6,
+    test89___trans_tmp_5, test89___trans_tmp_4, test89___trans_tmp_3,
+    test89_id18854, test89_id18860, test89_id18872, test89_id18873;
+template <typename T> T zero_upper(T in, unsigned) { return in; }
+void init(char pred, void *data, unsigned size) {
+  unsigned char *bytes = (unsigned char *)data;
+  for (unsigned i = 0; i != size; ++i)
+    bytes[i] = pred + i;
+}
+typedef long __attribute__((ext_vector_type(2))) ll2;
+ll2 test89_id18839 = -1964383749;
+__m128 test89_id18845, test89_id18879, test89_id18881;
+void test89() {
+  test89___trans_tmp_3 = __builtin_ia32_vcvtph2ps256(test89_id18839);
+  init(69, &test89_id18845, sizeof(test89_id18845));
+  test89___trans_tmp_4 = __builtin_shufflevector(test89_id18845, test89_id18845,
+                                                 0, 1, 2, 3, 1, 1, 1, 1);
+  __m256 id18844, id18870;
+  test89___trans_tmp_5 = __builtin_ia32_rcpps256(id18844);
+  test89___trans_tmp_6 =
+      __builtin_ia32_maxps256(test89___trans_tmp_5, _mm256_max_ps___b);
+  init(211, &test89_id18854, sizeof(test89_id18854));
+  test89___trans_tmp_7 = (__v8su)test89___trans_tmp_6 & (__v8su)test89_id18854;
+  init(205, &test89_id18860, sizeof(test89_id18860));
+  test89___trans_tmp_8 =
+      __builtin_ia32_hsubps256(test89_id18860, _mm256_hsub_ps___b);
+  for (int id18871_idx = 0; id18871_idx < 92; ++id18871_idx) {
+    init(220, &test89_id18872, sizeof(test89_id18872));
+    id18870 *= test89_id18872;
+  }
+  init(220, &test89_id18873, sizeof(test89_id18873));
+  __m128 id18878;
+  init(252, &id18878, sizeof(id18878));
+  for (int id18880_idx = 0; id18880_idx < 31; ++id18880_idx)
+    test89_id18879 -= test89_id18881;
+  __m128 __a = id18878;
+  __a[0] += test89_id18881[0];
+  test89___trans_tmp_10 =
+      __builtin_shufflevector(__a, __a, 0, 1, 2, 3, 1, 1, 1, 1);
+  __m256 id18874(zero_upper(test89___trans_tmp_10, 8));
+  test89___trans_tmp_11 =
+      __builtin_ia32_blendvps256(id18870, test89_id18873, id18874);
+  test89___trans_tmp_12 = __builtin_shufflevector(
+      test89___trans_tmp_8, test89___trans_tmp_11, 0, 8, 1, 1, 4, 2, 1, 1);
+  test89___trans_tmp_13 =
+      __builtin_ia32_haddps256(test89___trans_tmp_12, _mm256_hadd_ps___b);
+  test89___trans_tmp_14 =
+      ~(__v8su)test89___trans_tmp_7 & (__v8su)test89___trans_tmp_13;
+  test89___trans_tmp_15 =
+      (__v8su)test89___trans_tmp_3 | (__v8su)test89___trans_tmp_14;
+  printf("%f\n", test89___trans_tmp_15[0]);
+}
+int main() { test89(); }
+```
+When the above code is compiled with optimizations targeting btver2 (`-O2 -march=btver2`), it generates a different value after 8adfa29706e5407b62a4726e2172894e0dfdc1e8:
+```console
+$ ~/src/upstream/ffe1661fabc9cf379a10a0bf15268c6549e4836f-linux/bin/clang++ -O2 -march=btver2 test.cpp -o test.good.elf
+$ ./test.good.elf
+-268361104.000000
+$ ~/src/upstream/8adfa29706e5407b62a4726e2172894e0dfdc1e8-linux/bin/clang++ -O2 -march=btver2 test.cpp -o test.bad.elf
+$ ./test.bad.elf
+-3701730859659994532950310912.000000
+```
+Here is a link to godbolt showing the output difference between trunk and LLVM 15: https://godbolt.org/z/E63hbbTfs`
+
+
+---
+
+# 99
+### compiler : `LLVM`
+### title : `Static array indices in function parameter declarations cause poor SIMD code-generation`
+### open_at : `2022-11-22T00:03:31Z`
+### link : https://github.com/llvm/llvm-project/issues/59120
+### status : `open`
+### tags : `llvm:optimizations, `
+### content : 
+Static array indices in function parameter declarations poorly interfere with lowering of SIMD load-and-splat instructions, causing Clang/LLVM to generate separate full-vector load + vector-to-vector broadcast instructions. Here's the simplest example ([repro in Compiler Explorer](https://gcc.godbolt.org/z/hW5r4ehhK)):
+
+```c
+#include <stddef.h>
+
+#include <wasm_simd128.h>
+
+struct minmax_params {
+  float min[2];
+  float max[2];
+};
+
+v128_t f(const struct minmax_params params[1])
+{
+    // Generates v128.load64_splat as expected
+    return wasm_v128_load64_splat(&params->min);
+}
+
+v128_t g(const struct minmax_params params[static 1])
+{
+    // Generates two instructions: v128.load + i8x16.shuffle
+    return wasm_v128_load64_splat(&params->min);
+}
+```
+
+The example above is for WebAssembly SIMD, but this issue is not specific to this backend and can be reproduced at least on ARM as well.
+
+
+---
+
+# 100
+### compiler : `LLVM`
+### title : `Incorrect codegen for unaligned load/store (ARM NEON)`
+### open_at : `2022-11-19T06:19:42Z`
+### link : https://github.com/llvm/llvm-project/issues/59081
+### status : `open`
+### tags : `backend:ARM, llvm:codegen, miscompilation, `
+### content : 
+https://clang.godbolt.org/z/nEfsT961d
+
+```c
+#include <arm_neon.h>
+#include <stdint.h>
+
+void double32(uint8_t* data) {
+    uint8x16x2_t x = vld1q_u8_x2(data);
+    uint8x16_t y0 = vaddq_u8(x.val[0], x.val[0]);
+    uint8x16_t y1 = vaddq_u8(x.val[1], x.val[1]);
+    uint8x16x2_t y = {y0, y1};
+    vst1q_u8_x2(data, y);
+}
+```
+
+```asm
+double32:
+        vld1.8  {d16, d17, d18, d19}, [r0:256] ; <- should be [r0]
+        vshl.i8 q11, q9, #1
+        vshl.i8 q10, q8, #1
+        vst1.8  {d20, d21, d22, d23}, [r0:256] ; <- should be [r0]
+        bx      lr
+```
+
+https://developer.arm.com/documentation/den0018/a/NEON-Instruction-Set-Architecture/Alignment
+
+It seems that there is no way to generate unaligned load/store instructions.
+
+
+---
+
+# 101
+### compiler : `LLVM`
+### title : `Poor code when a pointer is a global var, but good code for static or local var`
+### open_at : `2022-11-16T22:38:19Z`
+### link : https://github.com/llvm/llvm-project/issues/59043
+### status : `open`
+### tags : `llvm:optimizations, `
+### content : 
+If you add `static` before `ptr` below, or make it a local var in function `main()` it generates 3 store instruction storing constant integer data. If you leave it as-is it generates pretty poor code. Every element in each struct is written to and there is no padding in any struct so I don't see why it would behave differently for a global.
+
+```c
+#include "stdlib.h"
+#include "stdint.h"
+
+typedef union reg1_t {
+  uint32_t val;
+  struct {
+    uint32_t name1 :13;
+    uint32_t name2 :6;
+    uint32_t name3 :9;
+    uint32_t name4 :4;
+  } field;
+} reg1_t; 
+
+typedef union reg2_t {
+  uint32_t val;
+  struct {
+    uint32_t name1 :7;
+    uint32_t name2 :13;
+    uint32_t name3 :12;
+  } field;
+} reg2_t; 
+
+typedef union reg3_t {
+  uint32_t val;
+  struct{
+    uint32_t name1 :13;
+    uint32_t name2 :6;
+    uint32_t name3 :9;
+    uint32_t name4 :4;
+  } field;
+} reg3_t; 
+
+typedef struct hw_reg {
+  reg1_t reg1;
+  reg2_t reg2;
+  reg3_t reg3;
+} hw_reg;
+
+hw_reg *ptr = (hw_reg*) 0x90000000;
+
+int main() {
+  ptr->reg1.field.name1=3;
+  ptr->reg1.field.name2=3;
+  ptr->reg1.field.name3=3;
+  ptr->reg1.field.name4=3;
+
+  ptr->reg2.field.name1=3;
+  ptr->reg2.field.name2=3;
+  ptr->reg2.field.name3=3;
+
+  ptr->reg3.field.name1=3;
+  ptr->reg3.field.name2=3;
+  ptr->reg3.field.name3=3;
+  ptr->reg3.field.name4=3;
+  return 0;
+}
+```
+
+
+---
+
+# 102
+### compiler : `LLVM`
+### title : `Incorrect codegen for int128 parameters with x64-systemv calling conv`
+### open_at : `2022-11-16T00:15:09Z`
+### link : https://github.com/llvm/llvm-project/issues/59011
+### status : `open`
+### tags : `clang:codegen, `
+### content : 
+## Description
+
+When compiling C/C++ code that takes an __int128 as its sixth argument, llvm splits it into two 64bit ints that get passed in a register and on the stack. According to the SysV ABI __int128 should be treated like a struct of two 64bit ints and therefore be passed completely in memory in that case.
+
+## Reproduction
+[https://godbolt.org/z/o8MMMYdY6](https://godbolt.org/z/o8MMMYdY6)
+
+Input C++:
+```cpp
+using uint128_t = unsigned __int128;
+
+unsigned long long tmpfn(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint128_t t) {
+    return (t >> 64) & 0xFFFFFFFFFFFFFFFF;
+}
+
+unsigned long long tmpfn2(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint128_t t) {
+    return t & 0xFFFFFFFFFFFFFFFF;
+}
+```
+
+Output from clang 15:
+```assembly
+tmpfn:
+        mov     rax, qword ptr [rsp + 8]
+        ret
+tmpfn2:
+        mov     rax, r9
+        ret
+```
+        
+Output from gcc 12:
+```assembly
+tmpfn:
+        mov     rax, QWORD PTR [rsp+16]
+        ret
+tmpfn2:
+        mov     rax, QWORD PTR [rsp+8]
+        ret
+```
+
+
+---
+
+# 103
+### compiler : `LLVM`
+### title : `C, C11 and later: padding not set to “zero bits” in compound literal`
+### open_at : `2022-11-11T20:07:11Z`
+### link : https://github.com/llvm/llvm-project/issues/58945
+### status : `open`
+### tags : `c11, c17, `
+### content : 
+Consider the C program:
+```c
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+
+struct record {
+  uint64_t id;
+  uint32_t gold_coins;
+};
+
+__attribute__((noinline))
+void sink(void*p) {
+    static const struct record ref = {1};
+    if (memcmp(&ref, p, sizeof ref))
+      printf("different\n");
+    else
+      printf("identical\n");
+}
+
+int main(void) {
+    struct record a = {1};
+    sink(&a);
+
+    void *p = &(struct record){1};
+    sink(p);
+}
+```
+The program above compiled with Clang 15.0.0 using `clang -std=c17 -O2` prints:
+```console
+identical
+different
+```
+[Compiler Explorer link](https://gcc.godbolt.org/z/KqsMaevcj)
+
+The “different” output shows that the padding of the compound literal was not set to 0. Here's the relevant snippet of the generated assembly:
+```asm
+        movq    $1, (%rsp)
+        movl    $0, 8(%rsp)
+        movq    %rsp, %rdi
+        callq   sink
+```
+
+This might indicate a bug in Clang, depending on how one interprets the words “the remainder of the aggregate” in [C17 6.7.9:21](https://cigix.me/c17#6.7.9.p21):
+
+> If there are fewer initializers in a brace-enclosed list than there are elements or members of an aggregate, or fewer characters in a string literal used to initialize an array of known size than there are elements in the array, the remainder of the aggregate shall be initialized implicitly the same as objects that have static storage duration.
+
+If “the remainder of the aggregate” is taken to include padding, then the padding should be zeroed in the compound literal in my example according to C17 6.7.9:10, which applies in this case per the phrase “the same as objects that have static storage duration” in 6.7.9:21.
+
+If “the remainder of the aggregate” is taken not to include padding, then Clang needlessly generates and copies zero bits in the case of the automatic variable `a`. From the assembly output:
+```s
+.L__const.main.a:
+        .quad   1                               # 0x1
+        .long   0                               # 0x0
+        .zero   4
+```
+
+
+---
+
+# 104
+### compiler : `LLVM`
+### title : `Constant tracking foiled by an escaping reference`
+### open_at : `2022-11-09T15:53:06Z`
+### link : https://github.com/llvm/llvm-project/issues/58899
+### status : `open`
+### tags : `llvm:optimizations, `
+### content : 
+Something weird happens to Clang's tracking a variable's value once it is passed by reference - __builtin_assume-ing its value afterwards or even actually reassigning it does not help the compiler 'get its head together'.
+
+Both __builtin_constant_p and the enable_if attribute then fail to 'detect' the 'obviously constant value' (which the compiler also obviously knows at compile-time since it generates code which stores the constant value directly into the function argument register ??).
+
+https://godbolt.org/z/3M8nx6qE7
+
+Tthis issue actually causes significant binary bloat (useless object cleanups being called for already destroyed objects)  in our production code which relies heavily on generated and generic C++ code.
+
+
+---
+
+# 105
+### compiler : `LLVM`
+### title : `[avr] Return values are promoted to (unsigned) int for no reason.`
+### open_at : `2022-11-08T12:02:43Z`
+### link : https://github.com/llvm/llvm-project/issues/58877
+### status : `closed`
+### tags : `clang:codegen, `
+### content : 
+Compile with `--target=avr -mmcu=atmega8 -Os -save-temps` the following code:
+```c++
+char func (char c)
+{
+    return c;
+}
+```
+The generated assembly reads:
+```asm
+func:
+	mov	r25, r24
+	lsl	r25
+	sbc	r25, r25
+	ret
+```
+which just wastes 3 cycles and 6 bytes for integer promotion that's not required.
+
+
+---
+
+# 106
+### compiler : `LLVM`
+### title : `Friended struct with concept gives different output in clang/gcc/MSVC `
+### open_at : `2022-11-06T21:46:51Z`
+### link : https://github.com/llvm/llvm-project/issues/58833
+### status : `open`
+### tags : `c++20, concepts, `
+### content : 
+GCC bug report: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107544
+
+I don't know which compiler is right, but all three give a different output.
+
+https://godbolt.org/z/7Pq3eWhc8
+
+```cpp
+#include <compare>
+#include <concepts>
+#include <iostream>
+
+template <class T>
+concept HasTag = requires {
+    T::Tag;
+    requires std::same_as<decltype(T::Tag), const bool>;
+};
+
+template <class T>
+struct check_tag final {
+    static constexpr bool value()
+        requires(!HasTag<T>)
+    {
+        return false;
+    }
+
+    static constexpr bool value()
+        requires(HasTag<T>)
+    {
+        return T::Tag;
+    };
+};
+
+struct S {
+   private:
+    template <class T>
+    friend struct check_tag;
+    static constexpr bool Tag = true;
+};
+
+int main() {
+    std::cout << HasTag<S> << "\n";
+    std::cout << check_tag<S>::value() << "\n";
+}
+```
+
+Clang output (the concept sees private data if used in friend):
+```console
+0
+1
+```
+
+GCC output (the concept always sees private data):
+```console
+1
+1
+```
+
+MSVC output (the concept never sees private data):
+```console
+0
+0
+```
+
+
+---
+
+# 107
+### compiler : `LLVM`
+### title : `__attribute__((pure))`/`__attribute__((const))` is a massive unchecked footgun
+### open_at : `2022-11-03T21:47:09Z`
+### link : https://github.com/llvm/llvm-project/issues/58798
+### status : `open`
+### tags : `clang:codegen, compiler-rt:ubsan, `
+### content : 
+This originates from https://oss-fuzz.com/testcase-detail/5834828872548352
+
+Consider (somewhat reduced from the original source):
+```cpp
+#include <vector>
+
+std::vector<int> handle() {
+  std::vector<int> v(42, 42); // this somehow leaks
+  return v;
+}
+
+__attribute__((pure)) // double yikes
+std::vector<int> footgun(int argc) {
+  std::vector<int> v(24, 24);
+  if(argc != 42)
+    throw int(0); // yikes
+  return v;
+}
+
+int main(int argc, char* argv[]) {
+    try {
+        auto v = handle();
+        auto v2 = footgun(argc);
+    } catch(...) {}
+    return 0;
+}
+```
+https://godbolt.org/z/zdavdKnfa
+
+Not a single diagnostic is triggered by this.
+Yet this is completely broken.
+
+In oss-fuzz issue, this manifested as an obscure leak,
+exception got optimized away, so this took a bit to understand...
+
+```cpp
+    // 'const', 'pure' and 'noalias' attributed functions are also nounwind.
+    if (TargetDecl->hasAttr<ConstAttr>()) {
+      FuncAttrs.addAttribute(llvm::Attribute::ReadNone);
+      FuncAttrs.addAttribute(llvm::Attribute::NoUnwind);
+      // gcc specifies that 'const' functions have greater restrictions than
+      // 'pure' functions, so they also cannot have infinite loops.
+      FuncAttrs.addAttribute(llvm::Attribute::WillReturn);
+    } else if (TargetDecl->hasAttr<PureAttr>()) {
+      FuncAttrs.addAttribute(llvm::Attribute::ReadOnly);
+      FuncAttrs.addAttribute(llvm::Attribute::NoUnwind);
+      // gcc specifies that 'pure' functions cannot have infinite loops.
+      FuncAttrs.addAttribute(llvm::Attribute::WillReturn);
+```
+
+Which means functions with these attributes *can* can call non-returning functions,
+or functions that throw exceptions, but the exception must be handled within the function.
+Yet we fail to catch that at all, even in UBSan.
+
+I think at least 4 things are missing:
+* we should infer `nothrow` attribute (and manifest in AST!) upon seeing `const`/`pure`.
+  that would catch the simplified snippet: https://godbolt.org/z/nM6PM6Msc
+* ubsan really should catch exception escape out of `noexcept` fn https://godbolt.org/z/z553KbPz4
+* we lack `willthrow` clang attribute. (maybe also `maythrow`?)
+  * we should add it, infer it from `throw` stmts
+  * and propagate it in obvious cases through call stack
+* we should diagnose calls to `willthrow` functions from `nothrow` functions :)
+
+CC @AaronBallman @regehr 
+
+
+---
+
+
+# 108
+### compiler : `LLVM`
+### title : `The preferred global deallocation for the array whose element is of class type with non-trival destructor`
+### open_at : `2022-11-03T14:08:49Z`
+### link : https://github.com/llvm/llvm-project/issues/58786
+### status : `open`
+### tags : `c++, clang:frontend, `
+### content : 
+```cpp
+void* operator new[](std::size_t N){
+    auto ptr = malloc(sizeof(char)* N);
+    std::cout<<"new\n";
+    return ptr;
+}
+void operator delete[](void* ptr,std::size_t N) noexcept{  // #1
+    std::cout<<"delete\n";
+    free(ptr);
+}
+
+struct A{
+  ~A(){}
+};
+int main(){
+   auto ptr = new A[2];
+   delete [] ptr;
+}
+```
+The found deallocation for the delete-expression should be `#1` and these implicitly declared ones in global scope
+>  - void operator delete[](void*) noexcept;
+> - void operator delete[](void*, std::align_val_t) noexcept;
+> - void operator delete[](void*, std::size_t, std::align_val_t) noexcept;
+
+In this example, clang does not select `#1` but it should be the preferred one as per [expr.delete] p10
+> If more than one deallocation function is found, the function to be called is selected as follows: 
+>> - [...]
+>> - If the deallocation functions **belong to a class scope**, the one without a parameter of type std​::​size_­t is selected.
+>> - If the type is complete and if, for an array delete expression only, the operand is a pointer to a class type with a non-trivial destructor or a (possibly multi-dimensional) array thereof, the function with a parameter of type std​::​size_­t is selected.  
+
+The second bullet does not apply here since the found declarations belong to global scope. The third bullet should apply here. For single object delete expression, clang also does not select the one with `std::size_t` but it should be.
+
+```cpp
+void* operator new(std::size_t N){
+    auto ptr = malloc(sizeof(char)* N);
+    std::cout<<"single new "<< (long long int) ptr<<std::endl;
+    return ptr;
+}
+
+void operator delete(void* ptr,std::size_t N) noexcept{
+    std::cout<<"single delete "<< (long long int) ptr<<std::endl;
+    free(ptr);
+}
+struct A{
+  // ~A(){}
+};
+int main(){
+    auto p = new A;
+    delete p;
+}
+```
+The one with parameter `std::size_t` should be selected regardless of whether the destructor of `A` is trivial or non-trivial according to third bullet. GCC is correct in two cases https://godbolt.org/z/5G41dP3P8`
+
+
+---
+
+# 109
+### compiler : `LLVM`
+### title : `wrong code at -O1 and above`
+### open_at : `2022-11-02T12:44:44Z`
+### link : https://github.com/llvm/llvm-project/issues/58765
+### status : `open`
+### tags : `backend:X86, llvm:codegen, miscompilation, `
+### content : 
+This appears to be a recent regression as 15.0.0 compiles the test correctly.
+
+Compiler Explorer: https://godbolt.org/z/6MG54GarG
+
+```cpp
+% clangtk -v
+clang version 16.0.0 (https://github.com/llvm/llvm-project.git 0c1f9b3f17bcb0639d5f2684771ef21c9508632c)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /local/suz-local/opfuzz/bin
+Found candidate GCC installation: /usr/lib/gcc/i686-linux-gnu/8
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/10
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/11
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/6
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/6.5.0
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/7
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/7.5.0
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/8
+Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/11
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+% 
+% clangtk -O0 small.c; ./a.out
+0
+% clangtk -O1 small.c
+% ./a.out
+0
+Floating point exception
+% cat small.c
+int printf(const char *, ...);
+int a;
+short b = 5, c;
+int main() {
+  short e = -1;
+  unsigned short f;
+  char g = 25;
+  long h = 0;
+  if (a) {
+    h = -1;
+    g = 0;
+  }
+  short i = ~g;
+  unsigned j = g;
+  if (b) {
+    f = (h | (i | (583 | j))) ^ ~(~(g & 5L) / e);
+    c = 22 / (8UL - (f - 0));
+    if (f > 0)
+      printf("0\n");
+  }
+  int k = h % c;
+  short l = f ^ 5L;
+  if (l)
+    a = k;
+  return 0;
+}
+```
+
+
+---
+
+# 110
+### compiler : `LLVM`
+### title : `Infinite self-recursion for functions renamed with __asm__, combined with inline specialization of it`
+### open_at : `2022-11-01T10:14:19Z`
+### link : https://github.com/llvm/llvm-project/issues/58724
+### status : `open`
+### tags : `c, clang:codegen, `
+### content : 
+(This relates to similar code patterns as in https://reviews.llvm.org/D137073.)
+
+One may want to redirect a well known public function name to a specific implementation name with `__asm__`.
+
+One may also want to specialize that function with an inline version of it, which may (or may not) do special extra checks on the inputs, and fall back on the base implementation for the heavy lifting. This pattern with extra inline specializations is used e.g. for `_FORTIFY_SOURCE` macros.
+
+This may look something like this:
+```c
+#ifdef _WIN64
+typedef unsigned long long size_t;
+#elif defined(_WIN32)
+typedef unsigned int size_t;
+#else
+typedef unsigned long size_t;
+#endif
+
+//#define public_func_name strlen
+
+size_t func_impl(const char *);
+
+// Redirect use of public_func_name to func_impl. The declaration above
+// is only necessary to allow calling it directly.
+size_t public_func_name(const char *) __asm__("func_impl");
+
+// Provide an inline version of public_func_name, which might or might not
+// do some extra checks, and finally falls back on calling func_impl.
+extern __inline__ __attribute__((__always_inline__, __gnu_inline__))
+size_t public_func_name(const char *a) { 
+  return func_impl(a);
+}
+
+void call(void) {
+  public_func_name("foo");
+}
+```
+
+If this is compiled with current Clang (e.g. 2390bb2347703bf500333fcd4d8c1b513a6e1740, Nov 1 2022), it produces an infinite loop:
+```console
+$ clang -target x86_64-linux-gnu -S -o - -O2 clang-rename-inline.c
+call:
+.LBB0_1:
+        jmp     .LBB0_1
+```
+
+If the function `public_func_name` is renamed to a function which Clang knows as a builtin, e.g. by uncommenting `#define public_func_name strlen`, then Clang successfully compiles this as one would have hoped:
+```console
+$ clang -target x86_64-linux-gnu -S -o - -O2 clang-rename-inline.c
+call:
+        leaq    .L.str(%rip), %rdi
+        jmp     func_impl@PLT
+```
+
+This can be tested online at https://gcc.godbolt.org/z/b814Y9Tjb too.
+
+Note that this seems to have changed recently. With `#define public_func_name strlen`; Clang 13 produces the same infinite recursion still. Clang 14 and 15 produce a bogus call to `jmp strlen.inline`, while current Clang 16 seems to do the right thing.
+
+(Also, doing such things for `strlen` is a bit unexpected - `strlen` was picked just for simplicity for the code example. Actual uses of such patterns do arise for e.g. printf style functions together with `_FORTIFY_SOURCE`.)### compiler : `LLVM`
+### title : `Miscompilation on i686 windows with opaque pointers + LTO`
+### open_at : `2022-11-01T07:46:57Z`
+### link : https://github.com/llvm/llvm-project/issues/58718
+### status : `closed`
+### tags : `miscompilation, ipo, release:backport, release:merged, `
+### content : 
+(For some reason, it doesn't happen outside LTO)
+This function call: https://searchfox.org/mozilla-central/rev/2809416b216b498ec3d8b0e65c25a135f4f5f37d/js/src/frontend/Parser.cpp#537-538
+(declaration in: https://searchfox.org/mozilla-central/rev/2809416b216b498ec3d8b0e65c25a135f4f5f37d/js/src/frontend/ErrorReporter.h#111-112)
+ends up compiled as:
+```asm
+movl    %edi, 4(%ebx)
+movl    %esi, (%ebx)
+movl    12(%ebp), %ecx
+movl    %ecx, 8(%ebx)
+movl    $32, 12(%ebx)
+movl    %eax, 16(%ebx)
+movl    -56(%ebp), %eax
+movl    %eax, 20(%ebx)
+pushl   %ebx
+calll   0x14f73040
+```
+(where `%ebx` has a copy of `%esp`)
+The same code, compiled with opaque pointer disabled, is compiled as:
+```asm
+movl    %edi, 4(%ebx)
+movl    %esi, (%ebx)
+movl    12(%ebp), %ecx
+movl    %ecx, 8(%ebx)
+movl    $32, 12(%ebx)
+movl    %eax, 16(%ebx)
+movl    -56(%ebp), %eax
+movl    %eax, 20(%ebx)
+calll   0x14faf0a0
+```
+Note the `push` is not there.
+
+At the IR level, it looks like this (with opaque pointers):
+```ll
+ %46 = alloca inalloca <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, align 4
+  %47 = load ptr, ptr %7, align 4
+  %48 = call noundef ptr @"?DeclarationKindString@frontend@js@@YAPBDW4DeclarationKind@12@@Z"(i8 noundef zeroext %2) #7
+  %49 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 1
+  store ptr %25, ptr %49, align 4
+  store ptr %0, ptr %46, align 4
+  %50 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 2
+  store i32 %3, ptr %50, align 4
+  %51 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 3
+  store i32 32, ptr %51, align 4
+  %52 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 4
+  store ptr %48, ptr %52, align 4
+  %53 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 5
+  store ptr %47, ptr %53, align 4
+  call void (ptr, ...) @"?errorWithNotesAt@ErrorReportMixin@frontend@js@@QBAXV?$UniquePtr@VJSErrorNotes@@U?$DeletePolicy@VJSErrorNotes@@@JS@@@mozilla@@IIZZ"(ptr nonnull inalloca(<{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>) %46)
+```
+For some reason, after `GlobalOptPass`, the call is transformed to:
+```ll
+  call void (ptr, ...) @"?errorWithNotesAt@ErrorReportMixin@frontend@js@@QBAXV?$UniquePtr@VJSErrorNotes@@U?$DeletePolicy@VJSErrorNotes@@@JS@@@mozilla@@IIZZ"(ptr nonnull %46)
+```
+(it lost the `inalloca`)
+and it's when starting to lower to assembly that the push is inserted, presumably because it now thinks it's calling the function as if `%46` was the first argument and the vararg was empty.
+
+The reason it requires LTO is probably that LTO brings in the full declaration of `errorWithNotesAt` and that has an effect on the `Function` the passes see.
+
+Cc: @nikic
+
+
+---
+
+CC @lhmouse
+
+
+---
+
+# 111
+### compiler : `LLVM`
+### title : `Miscompilation on i686 windows with opaque pointers + LTO`
+### open_at : `2022-11-01T07:46:57Z`
+### link : https://github.com/llvm/llvm-project/issues/58718
+### status : `closed`
+### tags : `miscompilation, ipo, release:backport, release:merged, `
+### content : 
+(For some reason, it doesn't happen outside LTO)
+This function call: https://searchfox.org/mozilla-central/rev/2809416b216b498ec3d8b0e65c25a135f4f5f37d/js/src/frontend/Parser.cpp#537-538
+(declaration in: https://searchfox.org/mozilla-central/rev/2809416b216b498ec3d8b0e65c25a135f4f5f37d/js/src/frontend/ErrorReporter.h#111-112)
+ends up compiled as:
+```asm
+movl    %edi, 4(%ebx)
+movl    %esi, (%ebx)
+movl    12(%ebp), %ecx
+movl    %ecx, 8(%ebx)
+movl    $32, 12(%ebx)
+movl    %eax, 16(%ebx)
+movl    -56(%ebp), %eax
+movl    %eax, 20(%ebx)
+pushl   %ebx
+calll   0x14f73040
+```
+(where `%ebx` has a copy of `%esp`)
+The same code, compiled with opaque pointer disabled, is compiled as:
+```asm
+movl    %edi, 4(%ebx)
+movl    %esi, (%ebx)
+movl    12(%ebp), %ecx
+movl    %ecx, 8(%ebx)
+movl    $32, 12(%ebx)
+movl    %eax, 16(%ebx)
+movl    -56(%ebp), %eax
+movl    %eax, 20(%ebx)
+calll   0x14faf0a0
+```
+Note the `push` is not there.
+
+At the IR level, it looks like this (with opaque pointers):
+```ll
+ %46 = alloca inalloca <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, align 4
+  %47 = load ptr, ptr %7, align 4
+  %48 = call noundef ptr @"?DeclarationKindString@frontend@js@@YAPBDW4DeclarationKind@12@@Z"(i8 noundef zeroext %2) #7
+  %49 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 1
+  store ptr %25, ptr %49, align 4
+  store ptr %0, ptr %46, align 4
+  %50 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 2
+  store i32 %3, ptr %50, align 4
+  %51 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 3
+  store i32 32, ptr %51, align 4
+  %52 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 4
+  store ptr %48, ptr %52, align 4
+  %53 = getelementptr inbounds <{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>, ptr %46, i32 0, i32 5
+  store ptr %47, ptr %53, align 4
+  call void (ptr, ...) @"?errorWithNotesAt@ErrorReportMixin@frontend@js@@QBAXV?$UniquePtr@VJSErrorNotes@@U?$DeletePolicy@VJSErrorNotes@@@JS@@@mozilla@@IIZZ"(ptr nonnull inalloca(<{ ptr, %"class.mozilla::UniquePtr.84", i32, i32, ptr, ptr }>) %46)
+```
+For some reason, after `GlobalOptPass`, the call is transformed to:
+```ll
+  call void (ptr, ...) @"?errorWithNotesAt@ErrorReportMixin@frontend@js@@QBAXV?$UniquePtr@VJSErrorNotes@@U?$DeletePolicy@VJSErrorNotes@@@JS@@@mozilla@@IIZZ"(ptr nonnull %46)
+```
+(it lost the `inalloca`)
+and it's when starting to lower to assembly that the push is inserted, presumably because it now thinks it's calling the function as if `%46` was the first argument and the vararg was empty.
+
+The reason it requires LTO is probably that LTO brings in the full declaration of `errorWithNotesAt` and that has an effect on the `Function` the passes see.
+
+Cc: @nikic
+
+
+---
+
+# 112
+### compiler : `LLVM`
+### title : `Invalid object passed to coroutine's await_transform`
+### open_at : `2022-10-23T10:28:30Z`
+### link : https://github.com/llvm/llvm-project/issues/58556
+### status : `open`
+### tags : `platform:windows, coroutines, `
+### content : 
+compiler: clang-cl from main, target=i686-windows-msvc, c++ lib = libcxx
+
+When running [this](https://github.com/chriskohlhoff/asio/blob/master/asio/src/examples/cpp20/coroutines/refactored_echo_server.cpp) example in debug mode [this](https://github.com/chriskohlhoff/asio/blob/master/asio/include/asio/impl/awaitable.hpp#L164) await_transform receives argument 'a' with invalid address, it was never created. With emit-llvm i can see that this argument has inalloca attribute. I thought it was a bug in asio, [here is related issue](https://github.com/chriskohlhoff/asio/issues/1141) in asio bug tracker.
+
+https://github.com/4e4o/clang_cl_crash/blob/main/example2.cpp
+
+---
+
+# 113
+### compiler : `LLVM`
+### title : `rbp` clobber in inline assembly is not respected for functions with a frame pointer
+### open_at : `2022-10-21T15:12:12Z`
+### link : https://github.com/llvm/llvm-project/issues/58528
+### status : `open`
+### tags : `backend:X86, llvm:codegen, miscompilation, `
+### content : 
+
+인라인 어셈블리 코드에서 "rbp"를 clobbered list에 넣는 것은, 이 코드가 실행되는 동안 rbp 레지스터의 값이 변할 수 있다는 것을 컴파일러에게 알리는 것입니다. 즉, 컴파일러는 이 정보를 바탕으로 rbp 레지스터를 안전하게 다루어야 합니다.
+
+그런데 문제는, 실제로 생성된 어셈블리 코드를 보면, 컴파일러가 rbp 레지스터의 값이 인라인 어셈블리 코드에 의해 변하지 않을 것이라고 가정하고 코드를 생성했다는 것입니다. 이로 인해, 만약 인라인 어셈블리 코드에서 rbp 레지스터를 변경한다면, 그 변경이 프로그램의 다른 부분에 영향을 미칠 수 있습니다.
+
+간단히 말해, 프로그래머는 "주의해! rbp가 변할 수 있어!"라고 컴파일러에게 알렸지만, 컴파일러는 이를 무시하고 rbp가 변하지 않을 것이라고 가정한 코드를 생성한 것입니다. 이로 인해 버그가 발생할 수 있습니다.
+
+https://godbolt.org/z/reM9vb8WP
+
+https://godbolt.org/z/Er54MnxWc
+
+The `rbp` register can be clobbered by inline assembly, like so:
+
+```c
+void simplenop(void) {
+    asm volatile("nop" : : : "rbp");
+}
+```
+
+This results in the following expected assembly:
+
+```asm
+simplenop():                          # @simplenop()
+        push    rbp
+        nop
+        pop     rbp
+        ret
+```
+
+However, when a frame pointer is forced, this clobber constraint is not respected:
+
+```c
+void buffernop(int size) {
+    char buf[size];
+    asm volatile("nop" : : "r"(buf): "rbp");
+}
+```
+
+```asm
+buffernop(int):                          # @buffernop(int)
+        push    rbp
+        mov     rbp, rsp
+        mov     eax, edi
+        mov     rcx, rsp
+        add     rax, 15
+        and     rax, -16
+        sub     rcx, rax
+        mov     rsp, rcx
+        nop
+        mov     rsp, rbp
+        pop     rbp
+        ret
+```
+
+As you can see, the generated code clearly expects the `rbp` to not be clobbered after the inline assembly.
+Godbolt link: https://godbolt.org/z/osMEb1Kcj
+
+This resulted in an actual bug in https://github.com/tinygo-org/tinygo/pull/3103#issuecomment-1287052017 where I try to call functions with a custom ABI via inline assembly.
+Ideally the X86 backend should save the `rbp` register somewhere else (for example, on the stack: `rsp` is not clobbered) or just throw an error. Silently miscompiling results in bugs.`
+
+
+---
+
+# 114
+### compiler : `LLVM`
+### title : `Clang choosing copy constructor over initializer_list`
+### open_at : `2022-10-21T08:48:52Z`
+### link : https://github.com/llvm/llvm-project/issues/58520
+### status : `open`
+### tags : `c++, clang:frontend, confirmed, `
+### content : 
+
+https://godbolt.org/z/5rrxGj4EM
+
+The following short program returns '3' with clang, but '30' with GCC and '12' with MSVC.
+The issue is that in lines (3) and (4), both the copy-constructor (1) and the initializer_list constructor (2) could be called.
+According to cppreference.com, (2) should be called.
+However, clang chooses (1) on both instances. (Interestingly, MSVC chooses (2) on (3) and (1) on (4).
+
+This error also accurs if the constructor of S takes an initializer_list of another type T, which can be implicitly contructed from S, this is how I encountered the bug in real code.
+
+```c++
+#include <initializer_list>
+
+struct S {
+    S() = default;
+    S(const S& other): i_(1) {} // (1)
+    S(const std::initializer_list<S> args): i_(10) {} // (2)
+
+    int i_;
+};
+
+struct T {
+    //Clang: calls (1)
+    //GCC, MSVC: calls (2)
+    T(const S& s) : s_{s} {}       // (3)
+
+    S s_;
+};
+
+int main() {
+    S s;
+    T t(s);
+
+    //Clang, MSVC: calls  (1)
+    //GCC: calls (2)
+    S s2{s};        // (4)
+
+    return t.s_.i_ + 2*s2.i_;
+}
+```
+
+
+---
+
+# 115
+### compiler : `LLVM`
+### title : `[coroutines] incorrect transformation removes co_await side effects in non-taken branch`
+### open_at : `2022-10-19T05:34:52Z`
+### link : https://github.com/llvm/llvm-project/issues/58459
+### status : `closed`
+### tags : `miscompilation, coroutines, `
+### content : 
+Here is a simple program that contains a chain of two coroutines, with one awaiting the other. The awaiter returned by `await_transform` calls an external function (`SomeExternalFunc`) in its `await_suspend` method:
+
+```c++
+#include <coroutine>
+#include <cstddef>
+
+// A function defined in another translaiton unit.
+void SomeExternalFunc();
+
+struct MyTask{
+  struct promise_type {
+    MyTask get_return_object() { return {std::coroutine_handle<promise_type>::from_promise(*this)}; }
+    std::suspend_always initial_suspend() { return {}; }
+
+    void unhandled_exception();
+    void return_void() {} 
+
+    auto await_transform(MyTask task) {
+      struct Awaiter {
+        bool await_ready() { return false; }
+
+        // Resume the lazy coroutine, first calling the external function.
+        std::coroutine_handle<promise_type> await_suspend(std::coroutine_handle<promise_type> h) {
+          callee.resume_when_done = h;
+          SomeExternalFunc();
+          return std::coroutine_handle<promise_type>::from_promise(callee);
+        }
+
+        // Clean up and then evaluate to null.
+        std::nullptr_t await_resume() {
+          std::coroutine_handle<promise_type>::from_promise(callee).destroy();
+          return nullptr;
+        }
+
+        promise_type& caller;
+        promise_type& callee;
+      };
+
+      return Awaiter{*this, task.handle.promise()};
+    }
+    
+    // Resume the coroutine that started us when we're done.
+    auto final_suspend() noexcept {
+      struct Awaiter {
+        bool await_ready() noexcept { return false; }
+        std::coroutine_handle<promise_type> await_suspend(std::coroutine_handle<promise_type> h) noexcept {
+          return to_resume;
+        }
+
+        void await_resume() noexcept;
+
+        std::coroutine_handle<promise_type> to_resume;
+      };
+
+      return Awaiter{resume_when_done};
+    }
+
+    // The coroutine to resume when we're done.
+    std::coroutine_handle<promise_type> resume_when_done;
+  };
+
+  // A handle for the coroutine that returned this task.
+  std::coroutine_handle<promise_type> handle;
+};
+
+MyTask DoSomethingElse() {
+  co_return;
+}
+
+// A coroutines that awaits a call to another.
+MyTask DoSomething() {
+  co_await DoSomethingElse();
+  co_return;
+}
+```
+
+When [compiled](https://godbolt.org/z/e9Mrz9hEa) with `-std=c++20 -O1`, this correctly generates a call to `SomeExternalFunc` from `DoSomething.resume`:
+
+```asm
+DoSomething() [clone .resume]:                # @DoSomething() [clone .resume]
+[...]
+        call    SomeExternalFunc()@PLT
+[...]
+```
+
+However if we [change](https://godbolt.org/z/WGbdG9r8c) the `co_await DoSomethingElse();` statement to be a branch:
+
+```c++
+if (co_await DoSomethingElse() != nullptr) {}
+```
+
+then all mentions of `SomeExternalFunc` are gone from the [generated code](https://gist.github.com/jacobsa/c6f5515f4ed66c93aae56627279b91a6).
+
+**I believe clang is wrong to eliminate this branch.** Although it's true that the branch can never be taken, evaluating the `co_await` expression may have a side effect through the call to `SomeExternalFunc`. (Indeed I found this bug because clang incorrectly removed such side effects in a real codebase.)`
+
+
+---
+
+# 116
+### compiler : `LLVM`
+### title : `Wrong code at -Os on x86_64-linux_gnu (LoopFlattenPass)`
+### open_at : `2022-10-18T13:59:56Z`
+### link : https://github.com/llvm/llvm-project/issues/58441
+### status : `closed`
+### tags : `miscompilation, loopoptim, `
+### content : 
+```cpp
+% clang-tk -v
+clang version 16.0.0 (https://github.com/llvm/llvm-project.git faf0e1fbf90f14a92042a83f6cb1239791674412)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /zdata/shaoli/compilers/ccbuilder-compilers
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/11
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/9
+Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/11
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+%
+% clang-tk -w -O0 a.c && ./a.out
+6
+% clang-tk -w -Os a.c && ./a.out
+1
+% cat a.c
+void printf();
+int c;
+int a(int b) {
+    int t = 0;
+    while (t < 7 && b) t++;
+    return t;
+}
+int e() {
+    int l;
+    for (l = 0; l < 6; l = l + 1)
+        for (c = 0; c < 6; c = (a(6) ^ 7) + c + 1)
+            ;
+}
+int main() {
+    e();
+    printf("%d\n", c);
+}
+%
+```
+Compiler explorer: https://godbolt.org/z/x1jvrPj9a
+`opt-bisect-limit` suggests that the issue might be in `LoopFlattenPass`.`
+
+
+---
+
+# 117
+### compiler : `LLVM`
+### title : `fno-semantic-interposition breaks code relying on address uniqueness of a function`
+### open_at : `2022-10-11T16:25:38Z`
+### link : https://github.com/llvm/llvm-project/issues/58295
+### status : `open`
+### tags : `clang:codegen, `
+### content : 
+```cpp
+// a.cpp
+#include <functional>
+#include <cassert>
+int foo(int x) { return x + 42; }
+
+bool bar(std::function<int(int)> F) {
+  auto f = F.target<int(*)(int)>();
+  return f && *f == foo;
+}
+```
+```cpp
+// b.cpp
+#include <functional>
+int foo(int x);
+
+bool bar(std::function<int(int)> F);
+
+int main() {
+  return bar(foo);
+}
+```
+```bash
+$ /usr/bin/clang++ -std=c++17 -fPIC -fno-semantic-interposition a.cpp -shared -o liba.so
+$ /usr/bin/clang++ -std=c++17 b.cpp -L. -la
+$ LD_LIBRARY_PATH=. ./a.out ; echo $?
+0
+$ /usr/bin/clang++ -std=c++17 -fPIC a.cpp -shared -o liba.so
+$ LD_LIBRARY_PATH=. ./a.out ; echo $?
+1
+```
+
+GCC is consistent with/without the option.
+
+I'm not sure if that is a bug or desired behavior, but https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100483#c2 suggests that the case above doesn't use *semantic* interposition and so should work with the option. I'm not unlikely to misread/misunderstand it though.
+
+
+---
+
+# 118
+### compiler : `LLVM`
+### title : `clang: x86 stdcall/thiscall with an empty object parameter yields ABI-incompatible code`
+### open_at : `2022-10-09T23:46:01Z`
+### link : https://github.com/llvm/llvm-project/issues/58255
+### status : `open`
+### tags : `backend:X86, clang:codegen, ABI, `
+### content : 
+Reproducer: https://godbolt.org/z/4havqnxxj
+
+Note the difference of `ret` operand for `T::x` -- gcc returns by 12 where clang returns by 8, and each caller computes the stack size for the respective return size. It's easy to see that if you try to mix the code generated between two the stack gets corrupted and the program crashes. Changing thiscall to stdcall yields a similar result, just with `this` added to the parameter size for each.
+
+My concrete case involves a 32 bit mingw app which [defaults the member functions to thiscall](https://github.com/llvm/llvm-project/blob/fee8f561bdc9317eee13b8f1866ca0dc778c1dc5/clang/lib/AST/ItaniumCXXABI.cpp#L239). The program immediately crashes as soon as it tries to copy a single `std::string` when built with -O0.`
+
+
+---
+
+# 119
+### compiler : `LLVM`
+### title : `Wrong code at -Os on x86_64-linux_gnu`
+### open_at : `2022-10-07T09:00:55Z`
+### link : https://github.com/llvm/llvm-project/issues/58223
+### status : `closed`
+### tags : `miscompilation, llvm:optimizations, `
+### content : 
+```console
+% clang-tk -v
+clang version 16.0.0 (https://github.com/llvm/llvm-project.git 0c1a3da8ea1f0e024ebfd85c7532926f26c6bde5)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /zdata/shaoli/compilers/ccbuilder-compilers
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/11
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/9
+Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/11
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+%
+% clang-tk -w -O0 a.c && ./a.out
+1
+% clang-tk -w -Os a.c && ./a.out
+0
+%
+% cat a.c
+void printf();
+int a = 1;
+int *b = &a, *c = &b;
+short d;
+char e, f = 1;
+static int *g = &a;
+static int ***h = &c;
+char *i = &f;
+static char *j = &e;
+long k;
+short l[1];
+short *m;
+int main() {
+  int ***n = &c;
+  m = l;
+  for (;;) {
+    d = 0;
+    for (; d <= 1; d++) {
+      k = ***n;
+      if (m)
+        *g = *j = 0;
+    }
+    ***n && (*i = 0);
+    if (**h)
+      break;
+  }
+  printf("%d\n", f);
+}
+%
+```
+Compiler explorer: https://godbolt.org/z/z8Gnz514T
+
+I have reported another bug before :https://github.com/llvm/llvm-project/issues/58140, but I don't think they are the same after I did `opt-bisect-limit`.`
+
+
+---
+
+# 120
+### compiler : `LLVM`
+### title : `Clang accepts invalid narrowing conversion`
+### open_at : `2022-10-06T15:55:51Z`
+### link : https://github.com/llvm/llvm-project/issues/58200
+### status : `closed`
+### tags : `c++17, clang:frontend, accepts-invalid, `
+### content : 
+The following invalid program is accepted by x86-64 clang 13.0.1 with C++17. [Demo](https://godbolt.org/z/hso9rG7as). 
+
+```
+void f() noexcept(5) //compiles with x86-64 clang 13.0.1 with C++17
+{
+
+}
+```
+
+
+---
+
+
+# 121
+### compiler : `LLVM`
+### title : `[clang++] Clang-15 vs Clang-14 local static init guards`
+### open_at : `2022-10-06T11:33:16Z`
+### link : https://github.com/llvm/llvm-project/issues/58184
+### status : `closed`
+### tags : `clang:codegen, `
+### content : 
+I'm using Clang++ to compile for a Cortex-M0+ target, and in moving from version 14 to version 15 I've found a difference in the code generated for guard variables for local statics.
+
+So, for example:
+```cpp
+int main()
+{
+    static knl::QueueN<uint32_t, 8> valQueue;
+    ...
+}
+```
+Clang-14 generates the following:
+```asm
+ldr r0, .LCPI0_4
+ldrb    r0, [r0]
+dmb sy
+lsls    r0, r0, #31
+beq .LBB0_8
+```
+Clang-15 now generates:
+```asm
+ldr r0, .LCPI0_4
+movs    r1, #2
+bl  __atomic_load_1
+lsls    r0, r0, #31
+beq .LBB0_8
+```
+
+An important consequence of this is that the second case actually requires an implementation of `__atomic_load_1` to be provided from somewhere external to the compiler (e.g. `-latomic`?), whereas the first doesn't.  
+
+Note that the source code doesn't explicitly use atomics, only the implied usage by the statics (which can of course be disabled with `-fno-threadsafe-statics`).
 
 
 ---
