@@ -12,7 +12,7 @@ HEADERS = {
     "Authorization": None,
     "X-GitHub-Api-Version": "2022-11-28"
 }
-months = 2
+months = 36
 chunk = 100
 
 def read_git_key(key_path):
@@ -21,7 +21,7 @@ def read_git_key(key_path):
         GITHUB_TOKEN = file.read().strip()
         HEADERS["Authorization"] = f"Bearer {GITHUB_TOKEN}"
 
-def calculate_dates(n_months=2):
+def calculate_dates(n_months):
     n_months_ago = datetime.utcnow() - relativedelta(months=n_months)
     since = n_months_ago.strftime("%Y-%m-%dT%H:%M:%SZ")
     until = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
