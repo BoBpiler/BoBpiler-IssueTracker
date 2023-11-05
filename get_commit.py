@@ -13,6 +13,7 @@ HEADERS = {
     "X-GitHub-Api-Version": "2022-11-28"
 }
 months = 2
+chunk = 100
 
 def read_git_key(key_path):
     global GITHUB_TOKEN, HEADERS
@@ -34,16 +35,24 @@ def get_github_commits(url, params):
         response.raise_for_status()
 
 def save_commit_to_markdown(commit_sha, commit_number):
-    # 커밋 갯수가 10의 배수마다 새로운 파일로 저장
-    file_number = commit_number // 10 + 1
+    # 커밋 갯수가 1000의 배수마다 새로운 파일로 저장
+    file_number = commit_number // chunk + 1
     file_name = f"commit_report_{file_number}.md"
     
     url = f"{BASE_URL}/{commit_sha}"
     response = requests.get(url, headers=HEADERS)
     if response.status_code == 200:
         commit_info = response.json()
+        # print(commit_info['commit']['committer']['date'])
         with open(file_name, "a", encoding="utf-8") as md_file:
-            md_file.write(f"## Commit Report - {commit_number}\n\n")
+            # 목차 추가
+            if commit_number % chunk == 1:
+                md_file.write("# 목차\n")
+                for i in range(1, chunk+1):
+                    md_file.write(f"- [{i}](#{i})\n")
+                md_file.write("\n")
+            md_file.write(f"# {commit_number}\n\n")
+            md_file.write(f"**Time : {commit_info['commit']['committer']['date']}**\n\n")
             md_file.write(f"**Commit URL**: [{commit_info['html_url']}]({commit_info['html_url']})\n\n")
             md_file.write(f"**Commit Message**:\n\n```\n{commit_info['commit']['message']}\n```\n\n")
             
